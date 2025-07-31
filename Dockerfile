@@ -1,49 +1,22 @@
-# =========================================
-# Stage 1: Build the Angular Application
-# =========================================
-# =========================================
-# Stage 1: Build the Angular Application
-# =========================================
-ARG NODE_VERSION=24-alpine
-ARG NGINX_VERSION=alpine3.21
+FROM node:14.17.3 as build
 
-# Use a lightweight Node.js image for building (customizable via ARG)
-FROM node:${NODE_VERSION} AS builder
+# Create html and workdir
+RUN mkdir -p /var/www/html/
+RUN mkdir -p /home/myFrontend
 
-# Set the working directory inside the container
-WORKDIR /app
+WORKDIR /home/myFrontend
 
-# Copy package-related files first to leverage Docker's caching mechanism
-COPY package.json package-lock.json ./
+# install package.json
+COPY package.json /home/myFrontend/package.json
+COPY . /home/myFrontend
 
-# Install project dependencies using npm ci (ensures a clean, reproducible install)
-RUN --mount=type=cache,target=/root/.npm npm ci
+#Install npm
+RUN npm install -g @angular/cli
+RUN npm install
 
-# Copy the rest of the application source code into the container
-COPY . .
-
-# Build the Angular application
+# Build
 RUN npm run build
 
-# =========================================
-# Stage 2: Prepare Nginx to Serve Static Files
-# =========================================
-
-FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runner
-
-# Use a built-in non-root user for security best practices
-USER nginx
-
-# Copy custom Nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copy the static build output from the build stage to Nginx's default HTML serving directory
-COPY --chown=nginx:nginx --from=builder /app/dist/*/browser /usr/share/nginx/html
-
-# Expose port 8081 to allow HTTP traffic
-# Note: The default NGINX container now listens on port 8081 instead of 80
-EXPOSE 8081
-
-# Start Nginx directly with custom config
-ENTRYPOINT ["nginx", "-c", "/etc/nginx/nginx.conf"]
-CMD ["-g", "daemon off;"]
+# Copy files to html dir
+FROM node:14.17.3
+COPY --from=build /home/myFrontend/dist/myProject/ /var/www/html/
