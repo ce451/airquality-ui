@@ -1,0 +1,30 @@
+<div class="h-full bg-white dark:bg-gray-900 rounded p-4 shadow-md text-gray-700 dark:text-white hover:bg-gray-800 cursor-pointer grid grid-rows-3 gap-2"
+     [routerLink]="['/station', station.id]"
+     [queryParams]="{ id: station.id }">
+  <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2">
+    <span>{{ station.name }}</span>
+    <span class="opacity-70 dark:invert dark:opacity-100 inline-block w-8 h-8">
+      @switch (station.status) {
+        @case ('ONLINE'){
+          <img src="assets/icons/icon-cloud.png" alt="Online">
+        }
+        @case ('OFFLINE'){
+          <img src="assets/icons/icon-cloud-cross.png" alt="Offline">
+        }
+        @case ('NEW'){
+          <img src="assets/icons/icon-new.png" alt="New">
+        }
+      }
+    </span>
+  </h3>
+  <div class="flex justify-center">
+    <span class="italic text-gray-500">Placeholder for Chart</span>
+  </div>
+  <span class="flex justify-between items-center font-bold">
+    <span>{{ (station.measurements[0]?.temperature) | number:'1.1-2' }} °C</span>
+    <span>{{ station.measurements[0]?.humidity | number:'1.1-2' }} %</span>
+    <span>{{ station.measurements[0]?.absoluteHumidity | number:'1.1-2' }} <sup>g</sup>/<sub>kg</sub></span>
+  </span>
+<!--  <app-mini-chart [dataPoints]="station.recentTemperatures"></app-mini-chart>-->
+</div>
+

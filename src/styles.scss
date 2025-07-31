@@ -1,1 +1,82 @@
-/* You can add global styles to this file, and also import other style files */
+//@tailwind base;
+//@tailwind components;
+//@tailwind utilities;
+
+@use "sass:color";
+@import "tailwindcss";
+
+@function tint($color, $percent) {
+  @return mix(white, $color, $percent);
+}
+@function shade($color, $percent) {
+  @return mix(black, $color, $percent);
+}
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+// Base colors
+$light-primary: #E6B6FA;
+$light-secondary: #CAF8FA;
+$dark-primary: #DB18D6;
+$dark-secondary: #40ECC5;
+
+@theme {
+
+}
+
+@layer base {
+  :root {
+    --color-primary-500: #E6B6FA;
+    --color-secondary-500: #CAF8FA;
+  }
+
+  [data-theme='dark'] {
+    --color-primary-500: #DB18D6;
+    --color-secondary-500: #40ECC5;
+  }
+}
+
+@layer components {
+  .toggle {
+    cursor: pointer;
+    position: relative;
+    width: 56px;
+    height: 32px;
+    display: inline-block;
+  }
+
+  .toggle input {
+    display: none;
+  }
+
+  .toggle span {
+    background: var(--color-secondary-500);
+    border-radius: 999px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: all 0.3s ease;
+  }
+
+  .toggle span::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+
+  .toggle input:checked + span {
+    background: var(--color-primary-500);
+  }
+
+  .toggle input:checked + span::before {
+    transform: translateX(24px);
+  }
+}

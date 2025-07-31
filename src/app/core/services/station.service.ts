@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {Station} from '../models/station.model';
 import {environment} from '@environments/environment';
 
@@ -12,11 +12,23 @@ export class StationService {
   constructor(private http: HttpClient) { }
 
   getAllStations(): Observable<Station[]> {
-    return this.http.get<Station[]>(`${environment.apiBaseUrl}/stations`);
+    console.log('apiUrl', this.apiUrl);
+    return this.http
+      .get<any>(`${this.apiUrl}`)
+      .pipe(
+        map(res => {
+          console.log(res);
+          return res || [] ;
+        })
+      );
   }
 
   getAllStationsWithLatestMeasurement(): Observable<Station[]> {
-    return this.http.get<Station[]>(`${environment.apiBaseUrl}/stations/latestMeasurement`);
+    return this.http
+      .get<any>(`${this.apiUrl}/latestMeasurement`)
+      .pipe(
+        map(res => res || [])
+      );
   }
 
   getStationById(id: string): Observable<Station> {
@@ -26,6 +38,4 @@ export class StationService {
   getStationByIdWithMeasurements(id: string): Observable<Station> {
     return this.http.get<Station>(`${this.apiUrl}/${id}/measurements`);
   }
-
-
 }
