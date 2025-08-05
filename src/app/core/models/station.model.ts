@@ -5,5 +5,7 @@ export class Station {
   name!: string;
   ipAddress!: string;
   status!: string;
+  stationGroupId!: number;
+  displayOrder!: number;
   measurements!: Measurement[];
 }

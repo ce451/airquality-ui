@@ -1,10 +1,15 @@
 <div class="bg-gray-100 dark:bg-black min-h-screen text-white p-4">
   <app-theme-toggle class=""></app-theme-toggle>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
-    @for (station of stations; track station){
-    <a [routerLink]="['/station', station.id]">
-      <app-station-card class="h-full" [station]="station"></app-station-card>
-    </a>
-    }
-  </div>
+  @for (stationGroup of stationGroups; track stationGroup) {
+    <div class="">
+      <h2 class="dark:text-primary-500 text-gray-800 font-bold">{{stationGroup.displayName}}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
+        @for (station of stationGroup.stations; track station) {
+          <a [routerLink]="['/station', station.id]">
+            <app-station-card class="h-full" [station]="station"></app-station-card>
+          </a>
+        }
+      </div>
+    </div>
+  }
 </div>
