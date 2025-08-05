@@ -13,6 +13,7 @@
 }
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant light (&:not([data-theme=dark]):not([data-theme=dark] *));
 
 // Base colors
 $light-primary: #E6B6FA;
@@ -21,7 +22,8 @@ $dark-primary: #DB18D6;
 $dark-secondary: #40ECC5;
 
 @theme {
-
+  --shadow-primary: 0 0px 30px -1px var(--color-primary-500);
+  --shadow-secondary: 0 3px 30px var(--color-secondary-500);
 }
 
 @layer base {
@@ -78,5 +80,33 @@ $dark-secondary: #40ECC5;
 
   .toggle input:checked + span::before {
     transform: translateX(24px);
+  }
+}
+
+@layer utilities {
+  .fancy-hover-shadow {
+    position: relative;
+    z-index: 0;
+  }
+
+  .fancy-hover-shadow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 120%;
+    height: 120%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(circle at center, var(--color-primary), var(--color-secondary));
+    opacity: 0;
+    filter: blur(20px);
+    transition: opacity 0.3s ease;
+  }
+
+  .fancy-hover-shadow:hover::before {
+    opacity: 1;
   }
 }

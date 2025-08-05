@@ -38,4 +38,8 @@ export class StationService {
   getStationByIdWithMeasurements(id: string): Observable<Station> {
     return this.http.get<Station>(`${this.apiUrl}/${id}/measurements`);
   }
+
+  // groupAndOrderStations(stations: Station[]): Observable<Station[]> {
+  //
+  // }
 }
