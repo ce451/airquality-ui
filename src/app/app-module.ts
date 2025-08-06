@@ -9,6 +9,7 @@ import {provideHttpClient} from '@angular/common/http';
 import { LastUpdatedPipe } from './shared/pipes/last-updated-pipe';
 import { StationCard } from './shared/components/station-card/station-card';
 import { ThemeToggle } from './shared/components/theme-toggle/theme-toggle';
+import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { ThemeToggle } from './shared/components/theme-toggle/theme-toggle';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    NgChartsModule
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),
