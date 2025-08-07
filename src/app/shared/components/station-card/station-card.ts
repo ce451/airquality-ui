@@ -13,6 +13,11 @@ import {Measurement} from 'src/app/core/models/measurement.model';
 export class StationCard {
   @Input() station!: Station;
 
+  tempColor = this.getCssVar('--color-temperature');
+  humColor = this.getCssVar('--color-humidity');
+  absHumColor = this.getCssVar('--color-absolute-humidity');
+
+
   chartData!: ChartConfiguration['data'];
   chartOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -23,8 +28,23 @@ export class StationCard {
         reverse: true
       },
       y: {
-        beginAtZero: false,
+        beginAtZero: true,
+        ticks: {
+          color: this.tempColor,
+        }
       },
+      y1: {
+        beginAtZero: true,
+        ticks: {
+          color: this.humColor,
+        }
+      },
+      y2: {
+        beginAtZero: true,
+        ticks: {
+          color: this.absHumColor,
+        }
+      }
     },
     elements: {
       point: {
@@ -70,25 +90,30 @@ export class StationCard {
         {
           label: 'Temperature (°C)',
           data: temperatureData,
-          borderColor: 'rgba(255, 99, 132, 1)',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderColor: this.tempColor,
+          backgroundColor: this.tempColor + '33',
           fill: true
         },
         {
           label: 'Humidity (%)',
           data: humidityData,
-          borderColor: 'rgba(54, 162, 235, 1)',
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: this.humColor,
+          backgroundColor: this.humColor + '33',
           fill: true
         },
         {
           label: 'Absolute Humidity (g/m³)',
           data: absoluteHumidityData,
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: this.absHumColor,
+          backgroundColor: this.absHumColor + '33',
           fill: true
         }
       ]
     };
   }
+
+  getCssVar(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
 }
