@@ -34,11 +34,11 @@ export class StationService {
       );
   }
 
-  getStationById(id: string): Observable<Station> {
+  getStationById(id: number): Observable<Station> {
     return this.http.get<Station>(`${this.apiUrl}/${id}`);
   }
 
-  getStationByIdWithMeasurements(id: string): Observable<Station> {
+  getStationByIdWithMeasurements(id: number): Observable<Station> {
     return this.http.get<Station>(`${this.apiUrl}/${id}/measurements`);
   }
 

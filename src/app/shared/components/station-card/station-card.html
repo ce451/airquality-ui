@@ -1,4 +1,4 @@
-<div class="h-full bg-white dark:bg-gray-800 rounded p-4 text-gray-700 dark:text-white dark:hover:brightness-115 light:shadow-lg light:hover:shadow-secondary cursor-pointer grid grid-rows-3 gap-2"
+<div class="h-full bg-white dark:bg-gray-800 rounded p-4 text-gray-700 dark:text-white dark:hover:brightness-115 light:shadow-lg light:hover:shadow-secondary cursor-pointer flex flex-col gap-2"
      [routerLink]="['/station', station.id]"
      [queryParams]="{ id: station.id }">
   <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2">
@@ -18,7 +18,12 @@
     </span>
   </h3>
   <div class="flex justify-center">
-    <span class="italic text-gray-500">Placeholder for Chart</span>
+<!--    <span class="italic text-gray-500">Placeholder for Chart</span>-->
+    <canvas baseChart
+            [data]="chartData"
+            [options]="chartOptions"
+            [type]="chartType">
+    </canvas>
   </div>
   <span class="flex justify-between items-center font-bold">
     <span>{{ (station.measurements[0]?.temperature) | number:'1.1-2' }} °C</span>
