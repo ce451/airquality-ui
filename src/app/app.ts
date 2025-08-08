@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import {ThemeService} from 'src/app/core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +8,11 @@ import { Component } from '@angular/core';
   styleUrl: './app.scss'
 })
 export class App {
-  protected title = 'airquality-ui';
+  protected title = 'LC\'s Air Quality Monitor';
+
+  constructor(private themeService: ThemeService) { }
+
+  ngOnInit() {
+    this.themeService.initTheme();
+  }
 }

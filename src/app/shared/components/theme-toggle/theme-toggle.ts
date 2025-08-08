@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {StationService} from 'src/app/core/services/station.service';
+import {ThemeService} from 'src/app/core/services/theme.service';
 
 @Component({
   selector: 'app-theme-toggle',
@@ -9,16 +11,18 @@ import { Component, OnInit } from '@angular/core';
 export class ThemeToggle implements OnInit {
   isDarkMode = false;
 
+  constructor(private themeService: ThemeService) { }
+
   ngOnInit() {
-    const theme = localStorage.getItem('theme') ?? 'dark';
-    this.isDarkMode = theme === 'dark';
-    document.documentElement.setAttribute('data-theme', theme);
+    this.isDarkMode = this.themeService.isDarkMode;
   }
 
   toggleTheme() {
-    this.isDarkMode = !this.isDarkMode;
-    const newTheme = this.isDarkMode ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    this.themeService.toggleTheme();
+    this.isDarkMode = this.themeService.isDarkMode;
+    // this.isDarkMode = !this.isDarkMode;
+    // const newTheme = this.isDarkMode ? 'dark' : 'light';
+    // document.documentElement.setAttribute('data-theme', newTheme);
+    // localStorage.setItem('theme', newTheme);
   }
 }

@@ -2,10 +2,11 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {Dashbaord} from './features/pages/dashbaord/dashbaord';
 import {StationService} from './core/services/station.service';
+import {StationDetail} from 'src/app/features/pages/station-detail/station-detail';
 
 const routes: Routes = [
   { path: '', component: Dashbaord },
-  { path: 'station/:id', component: StationService },
+  { path: 'station/:id', component: StationDetail },
 ];
 
 @NgModule({
