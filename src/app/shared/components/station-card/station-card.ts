@@ -1,9 +1,10 @@
-import {Component, Input, ViewChild} from '@angular/core';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import {Station} from 'src/app/core/models/station.model';
 import {StationService} from 'src/app/core/services/station.service';
 import {ChartConfiguration, ChartType} from 'chart.js';
 import {Measurement} from 'src/app/core/models/measurement.model';
 import {BaseChartDirective} from 'ng2-charts';
+import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 
 @Component({
   selector: 'app-station-card',
@@ -11,8 +12,9 @@ import {BaseChartDirective} from 'ng2-charts';
   templateUrl: './station-card.html',
   styleUrl: './station-card.scss'
 })
-export class StationCard {
+export class StationCard implements OnInit {
   @Input() station!: Station;
+  @Input() showStats: boolean = true;
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   tempColor = this.getCssVar('--color-temperature');
@@ -30,7 +32,20 @@ export class StationCard {
   chartOptions!: ChartConfiguration['options'];
   chartType: ChartType = 'line';
 
-  constructor(private stationService: StationService) {
+  currentScreenSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' = 'xs';
+
+  private displayNameMap = new Map([
+    [Breakpoints.XSmall, 'xs'],
+    [Breakpoints.Small, 'sm'],
+    [Breakpoints.Medium, 'md'],
+    [Breakpoints.Large, 'lg'],
+    [Breakpoints.XLarge, 'xl'],
+    // Tailwind’s 2xl = min-width 1536px (not in CDK by default, so add manually)
+    ['(min-width: 1536px)', '2xl']
+  ]);
+
+  constructor(private stationService: StationService,
+              private breakpointObserver: BreakpointObserver) {
   }
 
   ngOnInit() {
@@ -38,11 +53,21 @@ export class StationCard {
       throw new Error('Station input is required');
     }
 
+    this.breakpointObserver
+      .observe([...this.displayNameMap.keys()])
+      .subscribe(result => {
+        for (const query of Object.keys(result.breakpoints)) {
+          if (result.breakpoints[query]) {
+            this.currentScreenSize = (this.displayNameMap.get(query) as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl') ?? 'xs';
+          }
+        }
+      });
+
     this.stationService
       .getStationByIdWithMeasurements(this.station.id)
       .subscribe(data => {
         console.log('measurements for station:', data);
-        if(data.measurements) {
+        if (data.measurements) {
           this.parseMeasurements(data.measurements);
           this.setupChartOptions();
           this.chart?.update();
@@ -116,7 +141,7 @@ export class StationCard {
   setupChartOptions() {
     this.chartOptions = {
       responsive: true,
-      // maintainAspectRatio: false,
+      maintainAspectRatio: false,
       scales: {
         x: {
           display: false,

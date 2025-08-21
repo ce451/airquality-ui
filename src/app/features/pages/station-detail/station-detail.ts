@@ -2,6 +2,7 @@ import {Component, Input} from '@angular/core';
 import {Station} from 'src/app/core/models/station.model';
 import {ActivatedRoute} from '@angular/router';
 import {StationService} from 'src/app/core/services/station.service';
+import {ChartConfiguration, ChartType} from 'chart.js';
 
 @Component({
   selector: 'app-station-detail',
@@ -12,6 +13,9 @@ import {StationService} from 'src/app/core/services/station.service';
 export class StationDetail {
 
   station!: Station;
+  chartData!: ChartConfiguration['data'];
+  chartOptions!: ChartConfiguration['options'];
+  chartType: ChartType = 'line';
 
   constructor(private route: ActivatedRoute,
               private stationService: StationService) { }
@@ -28,6 +32,17 @@ export class StationDetail {
       this.stationService.getStationByIdWithMeasurements(stationId).subscribe(station => {
         this.station = station;
       });
+
+      // this.stationService
+      //   .getStationByIdWithMeasurements(this.station.id)
+      //   .subscribe(data => {
+      //     console.log('measurements for station:', data);
+      //     if(data.measurements) {
+      //       this.parseMeasurements(data.measurements);
+      //       this.setupChartOptions();
+      //       this.chart?.update();
+      //     }
+      //   });
 
     })
   }
