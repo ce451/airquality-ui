@@ -1,5 +1,6 @@
 export class Measurement {
     id!: number;
+    stationId!: number;
     temperature!: number;
     humidity!: number;
     absoluteHumidity!: number;

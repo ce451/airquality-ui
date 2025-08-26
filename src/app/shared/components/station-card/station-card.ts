@@ -5,6 +5,8 @@ import {ChartConfiguration, ChartType} from 'chart.js';
 import {Measurement} from 'src/app/core/models/measurement.model';
 import {BaseChartDirective} from 'ng2-charts';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
+import {WebSocketService} from 'src/app/core/services/web-socket.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-station-card',
@@ -17,22 +19,26 @@ export class StationCard implements OnInit {
   @Input() showStats: boolean = true;
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
-  tempColor = this.getCssVar('--color-temperature');
-  humColor = this.getCssVar('--color-humidity');
-  absHumColor = this.getCssVar('--color-absolute-humidity');
+  private tempColor = this.getCssVar('--color-temperature');
+  private humColor = this.getCssVar('--color-humidity');
+  private absHumColor = this.getCssVar('--color-absolute-humidity');
 
-  minTemp = 0;
-  maxTemp = 50;
-  minHum = 0;
-  maxHum = 100;
-  minAbsHum = 0;
-  maxAbsHum = 30;
+  private minTemp = 0;
+  private maxTemp = 50;
+  private minHum = 0;
+  private maxHum = 100;
+  private minAbsHum = 0;
+  private maxAbsHum = 30;
 
-  chartData!: ChartConfiguration['data'];
-  chartOptions!: ChartConfiguration['options'];
-  chartType: ChartType = 'line';
+  private temperatureData: number[] = [];
+  private humidityData: number[] = [];
+  private absoluteHumidityData: number[] = [];
 
-  currentScreenSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' = 'xs';
+  protected chartData!: ChartConfiguration['data'];
+  protected chartOptions!: ChartConfiguration['options'];
+  protected chartType: ChartType = 'line';
+
+  protected currentScreenSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' = 'xs';
 
   private displayNameMap = new Map([
     [Breakpoints.XSmall, 'xs'],
@@ -45,7 +51,8 @@ export class StationCard implements OnInit {
   ]);
 
   constructor(private stationService: StationService,
-              private breakpointObserver: BreakpointObserver) {
+              private breakpointObserver: BreakpointObserver,
+              private webSocketService: WebSocketService) {
   }
 
   ngOnInit() {
@@ -73,20 +80,32 @@ export class StationCard implements OnInit {
           this.chart?.update();
         }
       });
+
+    // this.webSocketService.streamForStation(this.station.id).subscribe(data => {
+    //   if (data) {
+    //     // Append new data point
+    //     this.station.measurements = this.station.measurements || [];
+    //     this.station.measurements.unshift(data);
+    //
+    //     this.parseMeasurements(this.station.measurements);
+    //     this.setupChartOptions();
+    //     this.chart?.update();
+    //   }
+    // });
   }
 
   parseMeasurements(measurements: Measurement[]): void {
     const labels = measurements.map(m => new Date(m.timestamp).toLocaleTimeString());
-    const temperatureData = measurements.map(m => m.temperature);
-    const humidityData = measurements.map(m => m.humidity);
-    const absoluteHumidityData = measurements.map(m => m.absoluteHumidity);
+    this.temperatureData = measurements.map(m => m.temperature);
+    this.humidityData = measurements.map(m => m.humidity);
+    this.absoluteHumidityData = measurements.map(m => m.absoluteHumidity);
 
-    this.minTemp = Math.floor(Math.min(...temperatureData)) - 2;
-    this.maxTemp = Math.ceil(Math.max(...temperatureData)) + 2;
-    this.minHum = Math.floor(Math.min(...humidityData) / 10) * 10 - 10;
-    this.maxHum = Math.ceil(Math.max(...humidityData)) + 2;
-    this.minAbsHum = Math.floor(Math.min(...absoluteHumidityData)) - 1;
-    this.maxAbsHum = Math.ceil(Math.max(...absoluteHumidityData)) + 5;
+    this.minTemp = Math.floor(Math.min(...this.temperatureData)) - 2;
+    this.maxTemp = Math.ceil(Math.max(...this.temperatureData)) + 2;
+    this.minHum = Math.floor(Math.min(...this.humidityData) / 10) * 10 - 10;
+    this.maxHum = Math.ceil(Math.max(...this.humidityData)) + 2;
+    this.minAbsHum = Math.floor(Math.min(...this.absoluteHumidityData)) - 1;
+    this.maxAbsHum = Math.ceil(Math.max(...this.absoluteHumidityData)) + 5;
 
     // log all the min and max values
     console.log('Min/Max Values:', {
@@ -103,7 +122,7 @@ export class StationCard implements OnInit {
       datasets: [
         {
           label: 'Temperature (°C)',
-          data: temperatureData,
+          data: this.temperatureData,
           borderColor: this.tempColor,
           backgroundColor: this.tempColor + '33',
           fill: true,
@@ -114,7 +133,7 @@ export class StationCard implements OnInit {
         },
         {
           label: 'Humidity (%)',
-          data: humidityData,
+          data: this.humidityData,
           borderColor: this.humColor,
           backgroundColor: this.humColor + '33',
           fill: true,
@@ -125,7 +144,7 @@ export class StationCard implements OnInit {
         },
         {
           label: 'Absolute Humidity (g/m³)',
-          data: absoluteHumidityData,
+          data: this.absoluteHumidityData,
           borderColor: this.absHumColor,
           backgroundColor: this.absHumColor + '33',
           fill: true,
