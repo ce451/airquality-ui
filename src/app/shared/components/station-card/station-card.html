@@ -30,9 +30,9 @@
   </div>
   @if (this.showStats) {
     <span class="flex justify-between items-center font-bold">
-    <span>{{ (station.measurements[0]?.temperature) | number:'1.1-2' }} °C</span>
-    <span>{{ station.measurements[0]?.humidity | number:'1.1-2' }} %</span>
-    <span>{{ station.measurements[0]?.absoluteHumidity | number:'1.1-2' }} <sup>g</sup>/<sub>kg</sub></span>
+    <span>{{ (measurements[0]?.temperature) | number:'1.1-2' }} °C</span>
+    <span>{{ measurements[0]?.humidity | number:'1.1-2' }} %</span>
+    <span>{{ measurements[0]?.absoluteHumidity | number:'1.1-2' }} <sup>g</sup>/<sub>kg</sub></span>
   </span>
   }
 </div>

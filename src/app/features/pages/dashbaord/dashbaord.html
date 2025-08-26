@@ -1,4 +1,3 @@
-<!--<div class="bg-gray-100 dark:bg-black min-h-screen text-white p-4">-->
 <app-theme-toggle class=""></app-theme-toggle>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
   @for (stationGroup of stationGroups; track stationGroup; let sgi = $index) {
@@ -7,7 +6,6 @@
         <h2 class="text-xl col-span-full font-bold"
             [class.mt-4]="sgi > 0">{{ stationGroup.displayName }}</h2>
       }
-      <!--        <h2 class="">{{stationGroup.displayName}}</h2>-->
       <a
         [routerLink]="['/station', station.id]"
         [class.col-start-1]="si === 0"> <!--  && stationGroup.stations.length > 1 -->
@@ -16,4 +14,3 @@
     }
   }
 </div>
-<!--</div>-->

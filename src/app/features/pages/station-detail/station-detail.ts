@@ -28,22 +28,9 @@ export class StationDetail {
       }
       console.log('Station ID:', stationId);
 
-
       this.stationService.getStationByIdWithMeasurements(stationId).subscribe(station => {
         this.station = station;
       });
-
-      // this.stationService
-      //   .getStationByIdWithMeasurements(this.station.id)
-      //   .subscribe(data => {
-      //     console.log('measurements for station:', data);
-      //     if(data.measurements) {
-      //       this.parseMeasurements(data.measurements);
-      //       this.setupChartOptions();
-      //       this.chart?.update();
-      //     }
-      //   });
-
     })
   }
 }

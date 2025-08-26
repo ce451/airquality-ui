@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {Station} from 'src/app/core/models/station.model';
 import {StationService} from 'src/app/core/services/station.service';
 import {ChartConfiguration, ChartType} from 'chart.js';
@@ -14,10 +14,12 @@ import {Observable} from 'rxjs';
   templateUrl: './station-card.html',
   styleUrl: './station-card.scss'
 })
-export class StationCard implements OnInit {
+export class StationCard implements OnInit, OnChanges {
   @Input() station!: Station;
   @Input() showStats: boolean = true;
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+
+  protected measurements: Measurement[] = [];
 
   private tempColor = this.getCssVar('--color-temperature');
   private humColor = this.getCssVar('--color-humidity');
@@ -56,9 +58,9 @@ export class StationCard implements OnInit {
   }
 
   ngOnInit() {
-    if (!this.station) {
-      throw new Error('Station input is required');
-    }
+    // if (!this.station) {
+    //   throw new Error('Station input is required');
+    // }
 
     this.breakpointObserver
       .observe([...this.displayNameMap.keys()])
@@ -70,28 +72,73 @@ export class StationCard implements OnInit {
         }
       });
 
+    // this.stationService
+    //   .getStationByIdWithMeasurements(this.station.id)
+    //   .subscribe(data => {
+    //     console.log('measurements for station:', data);
+    //     if (data.measurements) {
+    //       this.parseMeasurements(data.measurements);
+    //       this.setupChartOptions();
+    //       this.chart?.update();
+    //     }
+    //   });
+    //
+    // this.webSocketService.streamForStation(this.station.id).subscribe(data => {
+    //   if (data) {
+    //     // Append new data point
+    //     this.measurements = this.measurements || [];
+    //
+    //     console.log('station: ', this.station.name, this.station);
+    //     console.log('existing measurements for station: ', this.measurements);
+    //     console.log('new measurement for station: ', data);
+    //     // append new item to the front of the array
+    //     this.measurements.unshift(data);
+    //     this.measurements.pop();
+    //     console.log('new measurements: ', this.measurements);
+    //
+    //     this.parseMeasurements(this.measurements);
+    //     this.setupChartOptions();
+    //     this.chart?.update();
+    //   }
+    // });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // if (changes['station']?.currentValue) {
+    console.log('ngOnChanges station:', this.station);
+    if (this.station && this.station.id) {
+      this.measurements = [...(this.station.measurements || [])];
+      console.log('ngOnChanges measurements:', this.station.name, this.measurements);
+      this.initStationData();
+    }
+  }
+
+  private initStationData() {
     this.stationService
       .getStationByIdWithMeasurements(this.station.id)
       .subscribe(data => {
-        console.log('measurements for station:', data);
         if (data.measurements) {
+          this.measurements = data.measurements;
           this.parseMeasurements(data.measurements);
           this.setupChartOptions();
           this.chart?.update();
         }
       });
 
-    // this.webSocketService.streamForStation(this.station.id).subscribe(data => {
-    //   if (data) {
-    //     // Append new data point
-    //     this.station.measurements = this.station.measurements || [];
-    //     this.station.measurements.unshift(data);
-    //
-    //     this.parseMeasurements(this.station.measurements);
-    //     this.setupChartOptions();
-    //     this.chart?.update();
-    //   }
-    // });
+    this.webSocketService.streamForStation(this.station.id).subscribe(data => {
+      if (data) {
+        console.log('New measurement for station ', this.station.name, data);
+        console.log('Existing measurements for station ', this.station.name, this.measurements);
+
+        this.measurements = this.measurements || [];
+        this.measurements.unshift(data);
+        this.measurements.pop();
+
+        this.parseMeasurements(this.measurements);
+        this.setupChartOptions();
+        this.chart?.update();
+      }
+    });
   }
 
   parseMeasurements(measurements: Measurement[]): void {
@@ -206,7 +253,8 @@ export class StationCard implements OnInit {
         legend: {
           display: false
         }
-      }
+      },
+      animation: false
     };
   }
 
