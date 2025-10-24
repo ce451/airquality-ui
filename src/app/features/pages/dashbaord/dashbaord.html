@@ -8,11 +8,9 @@
           <h2 class="text-xl col-span-full font-bold"
               [class.mt-4]="sgi > 0">{{ stationGroup.displayName }}</h2>
         }
-        <a
-          [routerLink]="['/station', station.id]"
-          [class.col-start-1]="si === 0">
+        <div [class.col-start-1]="si === 0">
           <app-station-card class="h-full" [station]="station"></app-station-card>
-        </a>
+        </div>
       }
     }
   </div>

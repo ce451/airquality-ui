@@ -6,6 +6,7 @@ import {Measurement} from 'src/app/core/models/measurement.model';
 import {BaseChartDirective} from 'ng2-charts';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {WebSocketService} from 'src/app/core/services/web-socket.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-station-card',
@@ -53,7 +54,8 @@ export class StationCard implements OnInit, OnChanges {
 
   constructor(private stationService: StationService,
               private breakpointObserver: BreakpointObserver,
-              private webSocketService: WebSocketService) {
+              private webSocketService: WebSocketService,
+              private router: Router) {
   }
 
   ngOnInit() {
@@ -203,6 +205,14 @@ export class StationCard implements OnInit, OnChanges {
     this.chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
+      layout: {
+        padding: {
+          left: 0,
+          right: 5,
+          top: 5,
+          bottom: 5
+        }
+      },
       scales: {
         x: {
           display: false,
@@ -212,6 +222,7 @@ export class StationCard implements OnInit, OnChanges {
           beginAtZero: false,
           ticks: {
             color: this.tempColor,
+            padding: 0
           },
           grid: {
             drawOnChartArea: false,
@@ -223,6 +234,7 @@ export class StationCard implements OnInit, OnChanges {
           beginAtZero: false,
           ticks: {
             color: this.humColor,
+            padding: 0
           },
           grid: {
             drawOnChartArea: false,
@@ -234,6 +246,7 @@ export class StationCard implements OnInit, OnChanges {
           beginAtZero: false,
           ticks: {
             color: this.absHumColor,
+            padding: 0
           },
           min: this.minAbsHum,
           max: this.maxAbsHum,
@@ -255,6 +268,10 @@ export class StationCard implements OnInit, OnChanges {
 
   getCssVar(name: string): string {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  navigateToDetail(): void {
+    this.router.navigate(['/station', this.station.id]);
   }
 
 }
