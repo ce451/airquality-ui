@@ -2,7 +2,7 @@ import {Injectable, NgZone} from '@angular/core';
 import {Client, StompSubscription} from '@stomp/stompjs';
 import {BehaviorSubject, filter, Observable, shareReplay, Subject} from 'rxjs';
 import {Measurement} from 'src/app/core/models/measurement.model';
-import {environment} from '@environments/environment.development';
+import {environment} from '@environments/environment';
 import SockJS from 'sockjs-client';
 
 @Injectable({
