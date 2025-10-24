@@ -3,7 +3,7 @@
 //@tailwind utilities;
 
 @use "sass:color";
-@import url(tailwindcss);
+@import "tailwindcss";
 
 @function tint($color, $percent) {
   @return mix(white, $color, $percent);
