@@ -33,15 +33,10 @@ export class Dashbaord {
 
         this.stationGroups.sort((a, b) => a.displayOrder - b.displayOrder);
 
-        console.log('raw stationsGroups: ', this.stationGroups);
-        console.log('raw stations: ', this.stations);
-
         this.stationGroups.forEach(group => {
           group.stations = this.stations.filter(station => station.stationGroupId === group.id);
           group.stations.sort((a, b) => a.displayOrder - b.displayOrder);
         });
-
-        console.log('stations grouped and sorted: ', this.stationGroups);
       },
       error: err => console.error(err),
     });

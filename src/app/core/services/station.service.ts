@@ -14,14 +14,10 @@ export class StationService {
   }
 
   getAllStations(): Observable<Station[]> {
-    console.log('apiUrl', this.apiUrl);
     return this.http
       .get<any>(`${this.apiUrl}`)
       .pipe(
-        map(res => {
-          console.log('stations:', res);
-          return res || [];
-        })
+        map(res => res || [])
       );
   }
 

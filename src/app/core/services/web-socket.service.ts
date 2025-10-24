@@ -25,10 +25,7 @@ export class WebSocketService {
       webSocketFactory: () => new SockJS(environment.wsUrl),
       reconnectDelay: 1000,
       heartbeatIncoming: 10000,
-      heartbeatOutgoing: 10000,
-      debug: (str) => {
-        console.log(str);
-      }
+      heartbeatOutgoing: 10000
     });
 
     this.client.onConnect = () => {

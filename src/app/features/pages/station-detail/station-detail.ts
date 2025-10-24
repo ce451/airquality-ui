@@ -26,7 +26,6 @@ export class StationDetail {
       if (isNaN(stationId)) {
         throw new Error('Invalid station ID');
       }
-      console.log('Station ID:', stationId);
 
       this.stationService.getStationByIdWithMeasurements(stationId).subscribe(station => {
         this.station = station;

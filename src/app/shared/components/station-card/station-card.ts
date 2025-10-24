@@ -103,11 +103,8 @@ export class StationCard implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // if (changes['station']?.currentValue) {
-    console.log('ngOnChanges station:', this.station);
     if (this.station && this.station.id) {
       this.measurements = [...(this.station.measurements || [])];
-      console.log('ngOnChanges measurements:', this.station.name, this.measurements);
       this.initStationData();
     }
   }
@@ -126,9 +123,6 @@ export class StationCard implements OnInit, OnChanges {
 
     this.webSocketService.streamForStation(this.station.id).subscribe(data => {
       if (data) {
-        console.log('New measurement for station ', this.station.name, data);
-        console.log('Existing measurements for station ', this.station.name, this.measurements);
-
         this.measurements = this.measurements || [];
         this.measurements.unshift(data);
         this.measurements.pop();
@@ -152,16 +146,6 @@ export class StationCard implements OnInit, OnChanges {
     this.maxHum = Math.ceil(Math.max(...this.humidityData)) + 2;
     this.minAbsHum = Math.floor(Math.min(...this.absoluteHumidityData)) - 1;
     this.maxAbsHum = Math.ceil(Math.max(...this.absoluteHumidityData)) + 5;
-
-    // log all the min and max values
-    console.log('Min/Max Values:', {
-      minTemp: this.minTemp,
-      maxTemp: this.maxTemp,
-      minHum: this.minHum,
-      maxHum: this.maxHum,
-      minAbsHum: this.minAbsHum,
-      maxAbsHum: this.maxAbsHum
-    });
 
     this.chartData = {
       labels: labels,
