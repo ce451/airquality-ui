@@ -1,7 +1,5 @@
 <div
-  class="h-full bg-white dark:bg-gray-800 rounded p-4 dark:hover:brightness-115 light:shadow-lg light:hover:shadow-secondary cursor-pointer flex flex-col gap-2"
-  [routerLink]="['/station', station.id]"
-  [queryParams]="{ id: station.id }">
+  class="h-full bg-white dark:bg-gray-800 rounded p-4 dark:hover:brightness-115 light:shadow-lg light:hover:shadow-secondary cursor-pointer flex flex-col gap-2">
   @if (this.showStats) {
     <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2">
       <span>{{ station.name }}</span>
