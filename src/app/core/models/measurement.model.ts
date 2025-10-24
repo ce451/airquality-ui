@@ -1,5 +1,5 @@
 export class Measurement {
-    id!: number;
+    id!: string; // UUID from backend
     stationId!: number;
     temperature!: number;
     humidity!: number;

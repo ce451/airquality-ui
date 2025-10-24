@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {map, Observable} from 'rxjs';
 import {Station} from '../models/station.model';
 import {environment} from '@environments/environment';
@@ -33,8 +33,12 @@ export class StationService {
     return this.http.get<Station>(`${this.apiUrl}/${id}`);
   }
 
-  getStationByIdWithMeasurements(id: number): Observable<Station> {
-    return this.http.get<Station>(`${this.apiUrl}/${id}/measurements`);
+  getStationByIdWithMeasurements(id: number, minutes?: number): Observable<Station> {
+    let params = new HttpParams();
+    if (minutes !== undefined) {
+      params = params.set('minutes', minutes.toString());
+    }
+    return this.http.get<Station>(`${this.apiUrl}/${id}/measurements`, { params });
   }
 
   // groupAndOrderStations(stations: Station[]): StationGroupService[] {

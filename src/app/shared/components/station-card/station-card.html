@@ -18,7 +18,7 @@
     </span>
     </h3>
   }
-  <div class="w-full">
+  <div class="w-full" [ngClass]="{'h-80 md:h-96 lg:h-[500px] xl:h-[450px]': !showStats}">
     <canvas baseChart
             id="chart"
             [data]="chartData"

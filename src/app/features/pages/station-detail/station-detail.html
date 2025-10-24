@@ -4,6 +4,7 @@
   <div class="rounded bg-white dark:bg-gray-800 p-4 shadow-lg text-lg">
     <h1 class="text-2xl">Station <span class="font-bold">{{ station.name }}</span></h1>
     <span class="">Details</span>
+
     <div class="flex flex-row gap-2 md:gap-4 lg:gap-6 md:my-4 lg:my-6 flex-wrap md:grow-1 whitespace-nowrap ">
       <div
         class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
@@ -30,6 +31,50 @@
         <span>Last updated</span>
         <span class="font-semibold">{{ station.measurements[0].timestamp | lastUpdated }}</span>
       </div>
+    </div>
+
+    <!-- Time Filter Buttons -->
+    <div class="flex flex-wrap gap-2 my-4">
+      <button
+        (click)="setTimeFilter('1h')"
+        [class.bg-blue-500]="selectedFilter === '1h'"
+        [class.text-white]="selectedFilter === '1h'"
+        [class.bg-gray-200]="selectedFilter !== '1h'"
+        [class.dark:bg-gray-700]="selectedFilter !== '1h'"
+        [class.dark:text-gray-300]="selectedFilter !== '1h'"
+        class="px-4 py-2 rounded-lg font-semibold hover:opacity-80 transition-opacity">
+        1 Hour
+      </button>
+      <button
+        (click)="setTimeFilter('24h')"
+        [class.bg-blue-500]="selectedFilter === '24h'"
+        [class.text-white]="selectedFilter === '24h'"
+        [class.bg-gray-200]="selectedFilter !== '24h'"
+        [class.dark:bg-gray-700]="selectedFilter !== '24h'"
+        [class.dark:text-gray-300]="selectedFilter !== '24h'"
+        class="px-4 py-2 rounded-lg font-semibold hover:opacity-80 transition-opacity">
+        24 Hours
+      </button>
+      <button
+        (click)="setTimeFilter('week')"
+        [class.bg-blue-500]="selectedFilter === 'week'"
+        [class.text-white]="selectedFilter === 'week'"
+        [class.bg-gray-200]="selectedFilter !== 'week'"
+        [class.dark:bg-gray-700]="selectedFilter !== 'week'"
+        [class.dark:text-gray-300]="selectedFilter !== 'week'"
+        class="px-4 py-2 rounded-lg font-semibold hover:opacity-80 transition-opacity">
+        Week
+      </button>
+      <button
+        (click)="setTimeFilter('month')"
+        [class.bg-blue-500]="selectedFilter === 'month'"
+        [class.text-white]="selectedFilter === 'month'"
+        [class.bg-gray-200]="selectedFilter !== 'month'"
+        [class.dark:bg-gray-700]="selectedFilter !== 'month'"
+        [class.dark:text-gray-300]="selectedFilter !== 'month'"
+        class="px-4 py-2 rounded-lg font-semibold hover:opacity-80 transition-opacity">
+        Month
+      </button>
     </div>
 
     <app-station-card [station]="station" [showStats]="false"></app-station-card>
