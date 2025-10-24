@@ -19,9 +19,5 @@ export class ThemeToggle implements OnInit {
   toggleTheme() {
     this.themeService.toggleTheme();
     this.isDarkMode = this.themeService.isDarkMode;
-    // this.isDarkMode = !this.isDarkMode;
-    // const newTheme = this.isDarkMode ? 'dark' : 'light';
-    // document.documentElement.setAttribute('data-theme', newTheme);
-    // localStorage.setItem('theme', newTheme);
   }
 }
