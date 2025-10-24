@@ -14,14 +14,14 @@ import {forkJoin} from 'rxjs';
 export class Dashbaord {
   stations: Station[] = [];
   stationGroups: StationGroup[] = [];
+  isLoading: boolean = true;
 
   constructor(private stationService: StationService,
               private stationGroupService: StationGroupService,) {
   }
 
   ngOnInit(): void {
-
-    var observables = forkJoin({
+    const observables = forkJoin({
       stationGroups: this.stationGroupService.getAllStationGroups(),
       stations: this.stationService.getAllStationsWithLatestMeasurement()
     });
@@ -37,8 +37,13 @@ export class Dashbaord {
           group.stations = this.stations.filter(station => station.stationGroupId === group.id);
           group.stations.sort((a, b) => a.displayOrder - b.displayOrder);
         });
+
+        this.isLoading = false;
       },
-      error: err => console.error(err),
+      error: err => {
+        console.error(err);
+        this.isLoading = false;
+      },
     });
   }
 }

@@ -11,11 +11,11 @@ import {ChartConfiguration, ChartType} from 'chart.js';
   styleUrl: './station-detail.scss'
 })
 export class StationDetail {
-
   station!: Station;
   chartData!: ChartConfiguration['data'];
   chartOptions!: ChartConfiguration['options'];
   chartType: ChartType = 'line';
+  isLoading: boolean = true;
 
   constructor(private route: ActivatedRoute,
               private stationService: StationService) { }
@@ -27,8 +27,15 @@ export class StationDetail {
         throw new Error('Invalid station ID');
       }
 
-      this.stationService.getStationByIdWithMeasurements(stationId).subscribe(station => {
-        this.station = station;
+      this.stationService.getStationByIdWithMeasurements(stationId).subscribe({
+        next: station => {
+          this.station = station;
+          this.isLoading = false;
+        },
+        error: err => {
+          console.error(err);
+          this.isLoading = false;
+        }
       });
     })
   }

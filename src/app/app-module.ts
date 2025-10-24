@@ -10,6 +10,7 @@ import { LastUpdatedPipe } from './shared/pipes/last-updated-pipe';
 import { StationCard } from './shared/components/station-card/station-card';
 import { ThemeToggle } from './shared/components/theme-toggle/theme-toggle';
 import { NgChartsModule } from 'ng2-charts';
+import { LoadingSpinner } from './shared/components/loading-spinner/loading-spinner';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { NgChartsModule } from 'ng2-charts';
     StationDetail,
     LastUpdatedPipe,
     StationCard,
-    ThemeToggle
+    ThemeToggle,
+    LoadingSpinner
   ],
   imports: [
     BrowserModule,

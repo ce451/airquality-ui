@@ -1,33 +1,37 @@
-<div class="rounded bg-white dark:bg-gray-800 p-4 shadow-lg text-lg">
-  <h1 class="text-2xl">Station <span class="font-bold">{{ station.name }}</span></h1>
-  <span class="">Details</span>
-  <div class="flex flex-row gap-2 md:gap-4 lg:gap-6 md:my-4 lg:my-6 flex-wrap md:grow-1 whitespace-nowrap ">
-    <div
-      class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
-      <span>Id</span>
-      <span class="font-semibold">{{ station.id }}</span>
+@if (isLoading) {
+  <app-loading-spinner size="lg" message="Loading station details..."></app-loading-spinner>
+} @else {
+  <div class="rounded bg-white dark:bg-gray-800 p-4 shadow-lg text-lg">
+    <h1 class="text-2xl">Station <span class="font-bold">{{ station.name }}</span></h1>
+    <span class="">Details</span>
+    <div class="flex flex-row gap-2 md:gap-4 lg:gap-6 md:my-4 lg:my-6 flex-wrap md:grow-1 whitespace-nowrap ">
+      <div
+        class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
+        <span>Id</span>
+        <span class="font-semibold">{{ station.id }}</span>
+      </div>
+      <div
+        class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
+        <span>Name</span>
+        <span class="font-semibold">{{ station.name }}</span>
+      </div>
+      <div
+        class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
+        <span>Status</span>
+        <span class="font-semibold">{{ station.status }}</span>
+      </div>
+      <div
+        class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
+        <span>IP Address</span>
+        <span class="font-semibold">{{ station.ipAddress }}</span>
+      </div>
+      <div
+        class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
+        <span>Last updated</span>
+        <span class="font-semibold">{{ station.measurements[0].timestamp | lastUpdated }}</span>
+      </div>
     </div>
-    <div
-      class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
-      <span>Name</span>
-      <span class="font-semibold">{{ station.name }}</span>
-    </div>
-    <div
-      class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
-      <span>Status</span>
-      <span class="font-semibold">{{ station.status }}</span>
-    </div>
-    <div
-      class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
-      <span>IP Address</span>
-      <span class="font-semibold">{{ station.ipAddress }}</span>
-    </div>
-    <div
-      class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
-      <span>Last updated</span>
-      <span class="font-semibold">{{ station.measurements[0].timestamp | lastUpdated }}</span>
-    </div>
-  </div>
 
-  <app-station-card [station]="station" [showStats]="false"></app-station-card>
-</div>
+    <app-station-card [station]="station" [showStats]="false"></app-station-card>
+  </div>
+}

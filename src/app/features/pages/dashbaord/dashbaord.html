@@ -1,16 +1,21 @@
 <app-theme-toggle class=""></app-theme-toggle>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-  @for (stationGroup of stationGroups; track stationGroup; let sgi = $index) {
-    @for (station of stationGroup.stations; track station; let si = $index) {
-      @if (si === 0) {
-        <h2 class="text-xl col-span-full font-bold"
-            [class.mt-4]="sgi > 0">{{ stationGroup.displayName }}</h2>
+
+@if (isLoading) {
+  <app-loading-spinner size="lg" message="Loading stations..."></app-loading-spinner>
+} @else {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+    @for (stationGroup of stationGroups; track stationGroup; let sgi = $index) {
+      @for (station of stationGroup.stations; track station; let si = $index) {
+        @if (si === 0) {
+          <h2 class="text-xl col-span-full font-bold"
+              [class.mt-4]="sgi > 0">{{ stationGroup.displayName }}</h2>
+        }
+        <a
+          [routerLink]="['/station', station.id]"
+          [class.col-start-1]="si === 0">
+          <app-station-card class="h-full" [station]="station"></app-station-card>
+        </a>
       }
-      <a
-        [routerLink]="['/station', station.id]"
-        [class.col-start-1]="si === 0"> <!--  && stationGroup.stations.length > 1 -->
-        <app-station-card class="h-full" [station]="station"></app-station-card>
-      </a>
     }
-  }
-</div>
+  </div>
+}
