@@ -11,6 +11,7 @@ import { StationCard } from './shared/components/station-card/station-card';
 import { ThemeToggle } from './shared/components/theme-toggle/theme-toggle';
 import { NgChartsModule } from 'ng2-charts';
 import { LoadingSpinner } from './shared/components/loading-spinner/loading-spinner';
+import { Header } from './shared/components/header/header';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { LoadingSpinner } from './shared/components/loading-spinner/loading-spin
     LastUpdatedPipe,
     StationCard,
     ThemeToggle,
-    LoadingSpinner
+    LoadingSpinner,
+    Header
   ],
   imports: [
     BrowserModule,

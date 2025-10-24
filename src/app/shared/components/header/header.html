@@ -1,0 +1,39 @@
+<header class="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative flex items-center justify-between h-16">
+      <!-- Left side: Back button + Logo -->
+      <div class="flex items-center gap-3 flex-1">
+        @if (showBackButton) {
+          <button
+            (click)="goBack()"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+            aria-label="Go back">
+            <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+        }
+        <!-- Icon/Logo -->
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#DB18D6] to-[#40ECC5] flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Center: Project Name with Animated Gradient -->
+      <div class="absolute left-1/2 transform -translate-x-1/2 px-2">
+        <h1 class="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold gradient-text whitespace-nowrap">
+          LC's Air Quality Monitor
+        </h1>
+      </div>
+
+      <!-- Right side: Theme toggle (tucked away) -->
+      <div class="flex items-center justify-end flex-1">
+        <div class="opacity-60 hover:opacity-100 transition-opacity duration-200">
+          <app-theme-toggle></app-theme-toggle>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
