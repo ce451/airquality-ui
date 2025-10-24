@@ -3,7 +3,6 @@ import {HttpClient} from '@angular/common/http';
 import {map, Observable} from 'rxjs';
 import {Station} from '../models/station.model';
 import {environment} from '@environments/environment';
-import {StationGroup} from 'src/app/core/models/station-group.model';
 
 @Injectable({
   providedIn: 'root'

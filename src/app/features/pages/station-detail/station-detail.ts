@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component} from '@angular/core';
 import {Station} from 'src/app/core/models/station.model';
 import {ActivatedRoute} from '@angular/router';
 import {StationService} from 'src/app/core/services/station.service';

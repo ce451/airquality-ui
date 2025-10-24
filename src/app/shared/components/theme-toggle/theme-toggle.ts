@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import {StationService} from 'src/app/core/services/station.service';
 import {ThemeService} from 'src/app/core/services/theme.service';
 
 @Component({

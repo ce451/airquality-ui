@@ -6,7 +6,6 @@ import {Measurement} from 'src/app/core/models/measurement.model';
 import {BaseChartDirective} from 'ng2-charts';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {WebSocketService} from 'src/app/core/services/web-socket.service';
-import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-station-card',
