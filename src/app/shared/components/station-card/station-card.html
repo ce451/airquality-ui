@@ -1,5 +1,16 @@
 <div
   class="h-full bg-white dark:bg-gray-800 rounded p-4 light:shadow-lg flex flex-col gap-2 relative">
+
+  <!-- Loading overlay -->
+  @if (isLoadingMeasurements) {
+    <div class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-[1px] rounded flex items-center justify-center z-10">
+      <div class="flex flex-col items-center gap-2">
+        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+        <span class="text-sm text-gray-600 dark:text-gray-300">Loading data...</span>
+      </div>
+    </div>
+  }
+
   @if (this.showStats) {
     <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2">
       <span>{{ station.name }}</span>

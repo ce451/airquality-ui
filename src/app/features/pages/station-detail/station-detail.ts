@@ -18,6 +18,7 @@ export class StationDetail implements OnInit, OnDestroy {
   chartOptions!: ChartConfiguration['options'];
   chartType: ChartType = 'line';
   isLoading: boolean = true;
+  isLoadingChart: boolean = false;
   selectedFilter: TimeFilter = '24h';
   private currentStationId?: number;
   private visibilityChangeHandler: () => void;
@@ -53,7 +54,13 @@ export class StationDetail implements OnInit, OnDestroy {
   private loadData(): void {
     if (!this.currentStationId) return;
 
-    this.isLoading = true;
+    // On initial load, show full page loading
+    // On subsequent loads (filter changes), only show chart loading
+    const isInitialLoad = this.isLoading;
+    if (!isInitialLoad) {
+      this.isLoadingChart = true;
+    }
+
     const minutes = this.getMinutesForFilter(this.selectedFilter);
 
     this.stationService.getStationByIdWithMeasurements(this.currentStationId, minutes).subscribe({
@@ -67,10 +74,12 @@ export class StationDetail implements OnInit, OnDestroy {
         }
         this.station = station;
         this.isLoading = false;
+        this.isLoadingChart = false;
       },
       error: err => {
         console.error(err);
         this.isLoading = false;
+        this.isLoadingChart = false;
       }
     });
   }

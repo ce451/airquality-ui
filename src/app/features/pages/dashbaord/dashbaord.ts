@@ -40,9 +40,10 @@ export class Dashbaord implements OnInit, OnDestroy {
   private loadData(): void {
     this.isLoading = true;
 
+    // First, fetch station groups and stations (without measurements)
     const observables = forkJoin({
       stationGroups: this.stationGroupService.getAllStationGroups(),
-      stations: this.stationService.getAllStationsWithLatestMeasurement()
+      stations: this.stationService.getAllStations()
     });
 
     observables.subscribe({
@@ -57,6 +58,7 @@ export class Dashbaord implements OnInit, OnDestroy {
           group.stations.sort((a, b) => a.displayOrder - b.displayOrder);
         });
 
+        // Show cards immediately (measurements will load progressively in station-card component)
         this.isLoading = false;
       },
       error: err => {

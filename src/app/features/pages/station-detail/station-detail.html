@@ -77,7 +77,16 @@
       </button>
     </div>
 
-    <div class="-mx-3">
+    <div class="-mx-3 relative">
+      <!-- Chart loading overlay -->
+      @if (isLoadingChart) {
+        <div class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-[1px] rounded flex items-center justify-center z-10">
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-300">Loading chart data...</span>
+          </div>
+        </div>
+      }
       <app-station-card [station]="station" [showStats]="false"></app-station-card>
     </div>
   </div>

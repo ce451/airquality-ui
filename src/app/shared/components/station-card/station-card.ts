@@ -20,6 +20,7 @@ export class StationCard implements OnInit, OnChanges {
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   protected measurements: Measurement[] = [];
+  protected isLoadingMeasurements: boolean = false;
 
   private tempColor = this.getCssVar('--color-temperature');
   private humColor = this.getCssVar('--color-humidity');
@@ -113,19 +114,27 @@ export class StationCard implements OnInit, OnChanges {
 
   private initStationData() {
     // Only fetch from API if we have less than 2 measurements
-    // (Dashboard passes stations with only 1 latest measurement)
+    // (Dashboard now passes stations without measurements)
     // Detail page passes pre-filtered measurements, don't re-fetch those
     const shouldFetch = !this.station.measurements || this.station.measurements.length <= 1;
 
     if (shouldFetch) {
+      this.isLoadingMeasurements = true;
       this.stationService
         .getStationByIdWithMeasurements(this.station.id, 60) // Last 1 hour for dashboard
-        .subscribe(data => {
-          if (data.measurements) {
-            this.measurements = data.measurements;
-            this.parseMeasurements(data.measurements);
-            this.setupChartOptions();
-            this.chart?.update();
+        .subscribe({
+          next: data => {
+            if (data.measurements) {
+              this.measurements = data.measurements;
+              this.parseMeasurements(data.measurements);
+              this.setupChartOptions();
+              this.chart?.update();
+            }
+            this.isLoadingMeasurements = false;
+          },
+          error: err => {
+            console.error(err);
+            this.isLoadingMeasurements = false;
           }
         });
     } else {
