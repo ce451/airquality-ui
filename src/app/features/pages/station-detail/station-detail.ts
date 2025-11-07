@@ -4,7 +4,7 @@ import {ActivatedRoute} from '@angular/router';
 import {StationService} from 'src/app/core/services/station.service';
 import {ChartConfiguration, ChartType} from 'chart.js';
 
-type TimeFilter = '1h' | '24h' | 'week' | 'month';
+type TimeFilter = '1h' | '3h' | '24h' | 'week' | 'month';
 
 @Component({
   selector: 'app-station-detail',
@@ -93,6 +93,8 @@ export class StationDetail implements OnInit, OnDestroy {
     switch (filter) {
       case '1h':
         return 60;
+      case '3h':
+        return 180;
       case '24h':
         return 1440;
       case 'week':
@@ -110,6 +112,8 @@ export class StationDetail implements OnInit, OnDestroy {
     switch (filter) {
       case '1h':
         return 1; // Keep all (120 points)
+      case '3h':
+        return 1; // Keep all (360 points)
       case '24h':
         return 3; // Every 1.5 min (~960 points)
       case 'week':

@@ -46,6 +46,16 @@
         1 Hour
       </button>
       <button
+        (click)="setTimeFilter('3h')"
+        [class.bg-[var(--color-primary-500)]]="selectedFilter === '3h'"
+        [class.text-white]="selectedFilter === '3h'"
+        [class.bg-gray-200]="selectedFilter !== '3h'"
+        [class.dark:bg-gray-700]="selectedFilter !== '3h'"
+        [class.dark:text-gray-300]="selectedFilter !== '3h'"
+        class="px-4 py-2 rounded-lg font-semibold hover:opacity-80 transition-opacity">
+        3 Hours
+      </button>
+      <button
         (click)="setTimeFilter('24h')"
         [class.bg-[var(--color-primary-500)]]="selectedFilter === '24h'"
         [class.text-white]="selectedFilter === '24h'"
