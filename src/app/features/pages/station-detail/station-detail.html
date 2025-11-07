@@ -37,8 +37,7 @@
     <div class="flex flex-wrap gap-2 my-4">
       <button
         (click)="setTimeFilter('1h')"
-        [class.bg-gray-800]="selectedFilter === '1h'"
-        [class.dark:bg-gray-600]="selectedFilter === '1h'"
+        [class.bg-[var(--color-primary-500)]]="selectedFilter === '1h'"
         [class.text-white]="selectedFilter === '1h'"
         [class.bg-gray-200]="selectedFilter !== '1h'"
         [class.dark:bg-gray-700]="selectedFilter !== '1h'"
@@ -48,8 +47,7 @@
       </button>
       <button
         (click)="setTimeFilter('24h')"
-        [class.bg-gray-800]="selectedFilter === '24h'"
-        [class.dark:bg-gray-600]="selectedFilter === '24h'"
+        [class.bg-[var(--color-primary-500)]]="selectedFilter === '24h'"
         [class.text-white]="selectedFilter === '24h'"
         [class.bg-gray-200]="selectedFilter !== '24h'"
         [class.dark:bg-gray-700]="selectedFilter !== '24h'"
@@ -59,8 +57,7 @@
       </button>
       <button
         (click)="setTimeFilter('week')"
-        [class.bg-gray-800]="selectedFilter === 'week'"
-        [class.dark:bg-gray-600]="selectedFilter === 'week'"
+        [class.bg-[var(--color-primary-500)]]="selectedFilter === 'week'"
         [class.text-white]="selectedFilter === 'week'"
         [class.bg-gray-200]="selectedFilter !== 'week'"
         [class.dark:bg-gray-700]="selectedFilter !== 'week'"
@@ -70,8 +67,7 @@
       </button>
       <button
         (click)="setTimeFilter('month')"
-        [class.bg-gray-800]="selectedFilter === 'month'"
-        [class.dark:bg-gray-600]="selectedFilter === 'month'"
+        [class.bg-[var(--color-primary-500)]]="selectedFilter === 'month'"
         [class.text-white]="selectedFilter === 'month'"
         [class.bg-gray-200]="selectedFilter !== 'month'"
         [class.dark:bg-gray-700]="selectedFilter !== 'month'"
