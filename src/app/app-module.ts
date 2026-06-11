@@ -1,4 +1,4 @@
-import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { NgModule, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing-module';
@@ -12,6 +12,7 @@ import { ThemeToggle } from './shared/components/theme-toggle/theme-toggle';
 import { NgChartsModule } from 'ng2-charts';
 import { LoadingSpinner } from './shared/components/loading-spinner/loading-spinner';
 import { Header } from './shared/components/header/header';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,12 @@ import { Header } from './shared/components/header/header';
     BrowserModule,
     AppRoutingModule,
     NgChartsModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000'
+    }),
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),

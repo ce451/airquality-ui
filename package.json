@@ -27,6 +27,7 @@
     "@angular/forms": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
+    "@angular/service-worker": "^20.0.0",
     "@stomp/stompjs": "^7.1.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/sockjs-client": "^1.5.4",

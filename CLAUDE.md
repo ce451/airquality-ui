@@ -103,7 +103,14 @@ src/app/
 
 ### Backend Integration
 
-API Base URL configured in environment files (currently points to `http://s03:8080`):
+**Same-origin via nginx proxy**: In production the app calls the API under its own
+origin (`environment.apiBaseUrl = '/api'`); the UI container's `nginx.conf` strips
+the `/api` prefix and proxies to `airquality_api:8080` (Docker network alias,
+re-resolved at request time via Docker DNS). This avoids mixed content under HTTPS
+and removes the CORS dependency. Development (`environment.development.ts`) still
+talks directly to `http://localhost:8080`.
+
+The endpoint paths below are backend paths (prefixed with `/api` in production):
 
 **REST Endpoints**:
 - `GET /stations` - All stations (used for progressive loading)
@@ -116,7 +123,8 @@ API Base URL configured in environment files (currently points to `http://s03:80
   - Detail page filters: `60`, `1440`, `10080`, `43200` (1h, 24h, week, month)
 
 **WebSocket**:
-- Endpoint: `/ws`
+- Endpoint: `/ws` (production: `/api/ws` through the nginx proxy — WebSocket
+  upgrade headers and unbuffered SockJS streaming are configured there)
 - Topic: `/topic/measurements`
 - Message format: JSON matching `Measurement` model
 
@@ -152,6 +160,24 @@ API Base URL configured in environment files (currently points to `http://s03:80
 - **Dashboard Cards**: Icon button (chevron right) in top-right corner navigates to detail page
 - **Detail Page**: Back button in header returns to dashboard
 - **No Nested Routes**: Fixed double-back issue by removing nested routerLinks
+
+### PWA (Progressive Web App)
+- **Service Worker**: Angular SW (`@angular/service-worker`, `ngsw-config.json`);
+  only active in production builds and on secure origins (HTTPS or localhost)
+- **HTTPS origin**: `https://s03.ruffe-vega.ts.net:8443` via `tailscale serve` on s03
+  (TLS termination with the tailnet's Let's Encrypt cert, tailnet-only). Plain
+  `http://s03:8081` keeps working, just without SW/installability.
+- **App shell**: prefetched (hashed JS/CSS, index.html, manifest, icons)
+- **API caching**: `dataGroups` with `freshness` strategy (network-first with
+  timeout, cache fallback): `/api/stations*`, `/api/stationgroups`. Offline shows
+  the last-known data; `LastUpdatedPipe` makes staleness visible. WebSocket traffic
+  is not cached.
+- **Updates**: `SwUpdateService` (core/services) prompts to reload on
+  `VERSION_READY` and calls `checkForUpdate()` on `visibilitychange`. nginx serves
+  `index.html`/`ngsw.json`/`ngsw-worker.js` with `no-cache`, hashed assets as
+  `immutable`.
+- **Manifest/icons**: `public/manifest.webmanifest`; PNGs + favicon are derived
+  from `public/icons/icon.svg` (header-logo cloud on the brand gradient, maskable)
 
 ## Known Issues & Notes
 
