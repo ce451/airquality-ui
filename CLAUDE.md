@@ -135,10 +135,11 @@ API Base URL configured in environment files (currently points to `http://s03:80
 - **Default**: 24 Hours
 - **Server-Side Filtering**: Queries backend with `minutes` parameter to reduce data transfer
 - **Data Sampling**: Client-side sampling reduces chart data points for performance
-  - 1h: Keep all (~120 points)
-  - 24h: Every 3rd measurement (~960 points)
-  - Week: Every 10th measurement (~2,016 points)
-  - Month: Every 20th measurement (~4,320 points)
+  (every Nth measurement: 1h all, 24h 3rd, week 10th, month 20th). Point counts scale
+  with the raw sample rate — at the current **15s** rate roughly double the older
+  30s-era figures (e.g. 1h ≈ 240 points, not ~120). Note: the API now **thins older
+  data server-side** (see "Measurement Frequency" below), so longer windows return
+  progressively coarser data regardless of client sampling.
 - **Loading UX**: Semi-transparent overlay over chart area when filter changes
 
 ### Progressive Loading
@@ -158,4 +159,4 @@ API Base URL configured in environment files (currently points to `http://s03:80
 - **WebSocket Reconnect**: Configured with 1-second reconnect delay and 10-second heartbeats
 - **Build Budgets**: Initial bundle limited to 1MB (error), component styles limited to 8kB (error)
 - **Container Mode**: `startContainer` script uses `--host 0.0.0.0 --poll 2000` for Docker/container environments
-- **Measurement Frequency**: Backend stores measurements every 30 seconds
+- **Measurement Frequency**: Sensors POST every **15 seconds** (since the 2026-06-08 SHT3x changeover; was 30s before). This doubled the per-card payload (~239 points/hour) and was the cause of slower dashboard loading. The API (`AirQualityApi`) mitigates DB growth with a scheduled **thinning** task that downsamples older data (>10 min → 30s, >1 h → 60s, >1 day → 300s); once deployed, longer detail-page windows return progressively coarser data.
