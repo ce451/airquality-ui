@@ -22,6 +22,8 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
 
   protected measurements: Measurement[] = [];
   protected isLoadingMeasurements: boolean = false;
+  protected hasNoData: boolean = false;
+  protected loadError: boolean = false;
 
   private subs = new Subscription();
   private wsSub?: Subscription;
@@ -120,7 +122,13 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges) {
     if (this.station && this.station.id) {
       this.measurements = [...(this.station.measurements || [])];
-      this.ensureWsSubscription();
+      // Only the dashboard card (showStats=true) follows the live stream. The
+      // detail card pre-samples its window (week/month), so a 15s live point
+      // unshift/pop would corrupt the sampled series — it refreshes via the
+      // filter/visibility reload instead.
+      if (this.showStats) {
+        this.ensureWsSubscription();
+      }
       this.initStationData();
     }
   }
@@ -174,6 +182,7 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
     if (showOverlay) {
       this.isLoadingMeasurements = true;
     }
+    this.loadError = false;
     this.fetchSub?.unsubscribe();
     this.fetchSub = this.stationService
       .getStationByIdWithMeasurements(this.station.id, 60) // Last 1 hour for dashboard
@@ -189,6 +198,7 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
         },
         error: err => {
           console.error(err);
+          this.loadError = true;
           this.isLoadingMeasurements = false;
         }
       });
@@ -203,7 +213,30 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
     this.fetchMeasurements(false);
   }
 
+  retryLoad(): void {
+    this.fetchMeasurements(true);
+  }
+
   parseMeasurements(measurements: Measurement[]): void {
+    if (!measurements || measurements.length === 0) {
+      // No data: avoid Math.min(...[]) yielding ±Infinity axis bounds. Reset the
+      // axis fields to their defaults (setupChartOptions reads these same fields)
+      // and clear the chart so the empty-state overlay shows instead.
+      this.hasNoData = true;
+      this.minTemp = 0;
+      this.maxTemp = 50;
+      this.minHum = 0;
+      this.maxHum = 100;
+      this.minAbsHum = 0;
+      this.maxAbsHum = 30;
+      this.temperatureData = [];
+      this.humidityData = [];
+      this.absoluteHumidityData = [];
+      this.chartData = {labels: [], datasets: []};
+      return;
+    }
+    this.hasNoData = false;
+
     const labels = measurements.map(m => new Date(m.timestamp).toLocaleTimeString());
     this.temperatureData = measurements.map(m => m.temperature);
     this.humidityData = measurements.map(m => m.humidity);

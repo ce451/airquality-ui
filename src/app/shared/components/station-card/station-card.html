@@ -11,6 +11,22 @@
     </div>
   }
 
+  @if (hasNoData && !isLoadingMeasurements && !loadError) {
+    <div class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-[1px] rounded flex items-center justify-center z-10">
+      <span class="text-sm text-gray-500 dark:text-gray-400">Keine Daten</span>
+    </div>
+  }
+
+  @if (loadError && !isLoadingMeasurements) {
+    <div class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-[1px] rounded flex flex-col items-center justify-center gap-2 z-10">
+      <span class="text-sm text-gray-600 dark:text-gray-300">Fehler beim Laden</span>
+      <button (click)="retryLoad()"
+              class="px-3 py-1 rounded font-semibold text-sm bg-[var(--color-primary-500)] text-white hover:opacity-80 transition-opacity cursor-pointer">
+        Erneut
+      </button>
+    </div>
+  }
+
   @if (this.showStats) {
     <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2">
       <span>{{ station.name }}</span>

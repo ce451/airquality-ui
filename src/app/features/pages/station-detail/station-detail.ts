@@ -64,6 +64,10 @@ export class StationDetail implements OnInit, OnDestroy {
     this.loadData();
   }
 
+  retry(): void {
+    this.loadData();
+  }
+
   private loadData(): void {
     if (!this.currentStationId) return;
 

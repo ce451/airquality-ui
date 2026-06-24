@@ -1,5 +1,13 @@
 @if (isLoading) {
   <app-loading-spinner size="lg" message="Loading station details..."></app-loading-spinner>
+} @else if (!station) {
+  <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+    <span class="text-gray-600 dark:text-gray-300">Stationsdaten konnten nicht geladen werden.</span>
+    <button (click)="retry()"
+            class="px-4 py-2 rounded-lg font-semibold bg-[var(--color-primary-500)] text-white hover:opacity-80 transition-opacity cursor-pointer">
+      Erneut versuchen
+    </button>
+  </div>
 } @else {
   <div class="rounded bg-white dark:bg-gray-800 p-4 shadow-lg text-lg">
     <h1 class="text-2xl">Station <span class="font-bold">{{ station.name }}</span></h1>

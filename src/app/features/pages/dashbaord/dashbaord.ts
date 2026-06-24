@@ -17,6 +17,7 @@ export class Dashbaord implements OnInit, OnDestroy {
   stations: Station[] = [];
   stationGroups: StationGroup[] = [];
   isLoading: boolean = true;
+  hasError: boolean = false;
   private visibilityChangeHandler: () => void;
   private loadInFlight = false;
   private lastVisibilityRefresh = 0;
@@ -57,12 +58,17 @@ export class Dashbaord implements OnInit, OnDestroy {
     this.cards?.forEach(card => card.refresh());
   }
 
+  retry(): void {
+    this.loadData();
+  }
+
   private loadData(): void {
     if (this.loadInFlight) {
       return;
     }
     this.loadInFlight = true;
     this.isLoading = true;
+    this.hasError = false;
 
     // First, fetch station groups and stations (without measurements)
     const observables = forkJoin({
@@ -88,6 +94,7 @@ export class Dashbaord implements OnInit, OnDestroy {
       },
       error: err => {
         console.error(err);
+        this.hasError = true;
         this.isLoading = false;
         this.loadInFlight = false;
       },
