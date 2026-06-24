@@ -44,6 +44,10 @@ export class WebSocketService {
       this.zone.run(() => {
         this.connected$.next(false);
       });
+      // Drop the stale topic handle so subscribeToMeasurements() re-subscribes
+      // to /topic/measurements after auto-reconnect (e.g. mobile background cycle).
+      // Do NOT unsubscribe() here — the socket is already gone.
+      this.topicSub = undefined;
       console.warn('[STOMP] WebSocket connection closed');
     }
 

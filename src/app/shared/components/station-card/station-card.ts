@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {Station} from 'src/app/core/models/station.model';
 import {StationService} from 'src/app/core/services/station.service';
 import {ChartConfiguration, ChartType} from 'chart.js';
@@ -7,6 +7,7 @@ import {BaseChartDirective} from 'ng2-charts';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {WebSocketService} from 'src/app/core/services/web-socket.service';
 import {Router} from '@angular/router';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-station-card',
@@ -14,13 +15,18 @@ import {Router} from '@angular/router';
   templateUrl: './station-card.html',
   styleUrl: './station-card.scss'
 })
-export class StationCard implements OnInit, OnChanges {
+export class StationCard implements OnInit, OnChanges, OnDestroy {
   @Input() station!: Station;
   @Input() showStats: boolean = true;
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   protected measurements: Measurement[] = [];
   protected isLoadingMeasurements: boolean = false;
+
+  private subs = new Subscription();
+  private wsSub?: Subscription;
+  private fetchSub?: Subscription;
+  private subscribedStationId?: number;
 
   private tempColor = this.getCssVar('--color-temperature');
   private humColor = this.getCssVar('--color-humidity');
@@ -64,7 +70,7 @@ export class StationCard implements OnInit, OnChanges {
     //   throw new Error('Station input is required');
     // }
 
-    this.breakpointObserver
+    this.subs.add(this.breakpointObserver
       .observe([...this.displayNameMap.keys()])
       .subscribe(result => {
         for (const query of Object.keys(result.breakpoints)) {
@@ -72,7 +78,7 @@ export class StationCard implements OnInit, OnChanges {
             this.currentScreenSize = (this.displayNameMap.get(query) as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl') ?? 'xs';
           }
         }
-      });
+      }));
 
     // this.stationService
     //   .getStationByIdWithMeasurements(this.station.id)
@@ -105,9 +111,16 @@ export class StationCard implements OnInit, OnChanges {
     // });
   }
 
+  ngOnDestroy() {
+    this.subs.unsubscribe();
+    this.wsSub?.unsubscribe();
+    this.fetchSub?.unsubscribe();
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (this.station && this.station.id) {
       this.measurements = [...(this.station.measurements || [])];
+      this.ensureWsSubscription();
       this.initStationData();
     }
   }
@@ -119,32 +132,24 @@ export class StationCard implements OnInit, OnChanges {
     const shouldFetch = !this.station.measurements || this.station.measurements.length <= 1;
 
     if (shouldFetch) {
-      this.isLoadingMeasurements = true;
-      this.stationService
-        .getStationByIdWithMeasurements(this.station.id, 60) // Last 1 hour for dashboard
-        .subscribe({
-          next: data => {
-            if (data.measurements) {
-              this.measurements = data.measurements;
-              this.parseMeasurements(data.measurements);
-              this.setupChartOptions();
-              this.chart?.update();
-            }
-            this.isLoadingMeasurements = false;
-          },
-          error: err => {
-            console.error(err);
-            this.isLoadingMeasurements = false;
-          }
-        });
+      this.fetchMeasurements(true);
     } else {
       // Use measurements passed from parent
       this.parseMeasurements(this.measurements);
       this.setupChartOptions();
       this.chart?.update();
     }
+  }
 
-    this.webSocketService.streamForStation(this.station.id).subscribe(data => {
+  // Subscribe to the live measurement stream exactly once per station id.
+  // Re-running ngOnChanges (e.g. a switch-back refresh) must not stack subscriptions.
+  private ensureWsSubscription(): void {
+    if (this.subscribedStationId === this.station.id && this.wsSub) {
+      return;
+    }
+    this.wsSub?.unsubscribe();
+    this.subscribedStationId = this.station.id;
+    this.wsSub = this.webSocketService.streamForStation(this.station.id).subscribe(data => {
       if (data) {
         this.measurements = this.measurements || [];
         this.measurements.unshift(data);
@@ -155,6 +160,47 @@ export class StationCard implements OnInit, OnChanges {
         this.chart?.update();
       }
     });
+  }
+
+  // Fetch the last hour of measurements. showOverlay=true blanks the card with the
+  // spinner (first load); false refreshes silently in the background (switch-back).
+  private fetchMeasurements(showOverlay: boolean): void {
+    // Don't let a silent refresh interrupt an in-flight overlay (first) load —
+    // cancelling it would strand the spinner. Concurrent silent refreshes are
+    // serialized by fetchSub.unsubscribe() below (latest wins).
+    if (this.isLoadingMeasurements) {
+      return;
+    }
+    if (showOverlay) {
+      this.isLoadingMeasurements = true;
+    }
+    this.fetchSub?.unsubscribe();
+    this.fetchSub = this.stationService
+      .getStationByIdWithMeasurements(this.station.id, 60) // Last 1 hour for dashboard
+      .subscribe({
+        next: data => {
+          if (data.measurements) {
+            this.measurements = data.measurements;
+            this.parseMeasurements(data.measurements);
+            this.setupChartOptions();
+            this.chart?.update();
+          }
+          this.isLoadingMeasurements = false;
+        },
+        error: err => {
+          console.error(err);
+          this.isLoadingMeasurements = false;
+        }
+      });
+  }
+
+  // Silent background refresh triggered by the dashboard when the app returns to
+  // the foreground. No-op for the detail-page card (it owns its measurements).
+  public refresh(): void {
+    if (!this.showStats || !this.station || !this.station.id) {
+      return;
+    }
+    this.fetchMeasurements(false);
   }
 
   parseMeasurements(measurements: Measurement[]): void {

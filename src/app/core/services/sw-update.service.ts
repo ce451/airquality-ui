@@ -6,6 +6,7 @@ import {filter} from 'rxjs';
   providedIn: 'root'
 })
 export class SwUpdateService {
+  private lastCheck = 0;
 
   constructor(private swUpdate: SwUpdate) {
   }
@@ -27,6 +28,13 @@ export class SwUpdateService {
     // same visibility signal the pages already use for data refresh.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
+        // Throttle: a focus flicker shouldn't fire an ngsw.json fetch on every
+        // return and compete with the data refresh on a sleepy radio.
+        const now = Date.now();
+        if (now - this.lastCheck < 60000) {
+          return;
+        }
+        this.lastCheck = now;
         this.swUpdate.checkForUpdate().catch(() => {});
       }
     });

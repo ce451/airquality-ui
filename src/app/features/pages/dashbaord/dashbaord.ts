@@ -1,8 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {StationService} from 'src/app/core/services/station.service';
 import {Station} from 'src/app/core/models/station.model';
 import {StationGroup} from 'src/app/core/models/station-group.model';
 import {StationGroupService} from 'src/app/core/services/station-group.service';
+import {StationCard} from 'src/app/shared/components/station-card/station-card';
 import {forkJoin} from 'rxjs';
 
 @Component({
@@ -12,10 +13,13 @@ import {forkJoin} from 'rxjs';
   styleUrl: './dashbaord.scss'
 })
 export class Dashbaord implements OnInit, OnDestroy {
+  @ViewChildren(StationCard) cards?: QueryList<StationCard>;
   stations: Station[] = [];
   stationGroups: StationGroup[] = [];
   isLoading: boolean = true;
   private visibilityChangeHandler: () => void;
+  private loadInFlight = false;
+  private lastVisibilityRefresh = 0;
 
   constructor(private stationService: StationService,
               private stationGroupService: StationGroupService,) {
@@ -32,12 +36,32 @@ export class Dashbaord implements OnInit, OnDestroy {
   }
 
   private handleVisibilityChange(): void {
-    if (!document.hidden) {
-      this.loadData();
+    if (document.hidden) {
+      return;
     }
+    const now = Date.now();
+    if (now - this.lastVisibilityRefresh < 2000) {
+      return;
+    }
+    this.lastVisibilityRefresh = now;
+    // If the initial load never produced any cards (e.g. offline cold start or a
+    // failed/interrupted first load), retry it. Otherwise refresh each card's
+    // measurements silently — no list refetch, no grid blank. The station list
+    // itself is intentionally fetched only once (sensors rarely change, and the
+    // card shows no status field); a full reload picks up added/removed/renamed
+    // stations.
+    if (!this.stations.length) {
+      this.loadData();
+      return;
+    }
+    this.cards?.forEach(card => card.refresh());
   }
 
   private loadData(): void {
+    if (this.loadInFlight) {
+      return;
+    }
+    this.loadInFlight = true;
     this.isLoading = true;
 
     // First, fetch station groups and stations (without measurements)
@@ -60,10 +84,12 @@ export class Dashbaord implements OnInit, OnDestroy {
 
         // Show cards immediately (measurements will load progressively in station-card component)
         this.isLoading = false;
+        this.loadInFlight = false;
       },
       error: err => {
         console.error(err);
         this.isLoading = false;
+        this.loadInFlight = false;
       },
     });
   }

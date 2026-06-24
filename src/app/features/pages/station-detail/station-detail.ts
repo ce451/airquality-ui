@@ -3,6 +3,7 @@ import {Station} from 'src/app/core/models/station.model';
 import {ActivatedRoute} from '@angular/router';
 import {StationService} from 'src/app/core/services/station.service';
 import {ChartConfiguration, ChartType} from 'chart.js';
+import {Subscription} from 'rxjs';
 
 type TimeFilter = '1h' | '3h' | '24h' | 'week' | 'month';
 
@@ -22,6 +23,10 @@ export class StationDetail implements OnInit, OnDestroy {
   selectedFilter: TimeFilter = '24h';
   private currentStationId?: number;
   private visibilityChangeHandler: () => void;
+  private hasLoadedOnce = false;
+  private lastVisibilityRefresh = 0;
+  private routeSub?: Subscription;
+  private loadSub?: Subscription;
 
   constructor(private route: ActivatedRoute,
               private stationService: StationService) {
@@ -29,7 +34,7 @@ export class StationDetail implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.route.params.subscribe(params => {
+    this.routeSub = this.route.params.subscribe(params => {
       const stationId = +params['id'];
       if (isNaN(stationId)) {
         throw new Error('Invalid station ID');
@@ -43,27 +48,40 @@ export class StationDetail implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+    this.routeSub?.unsubscribe();
+    this.loadSub?.unsubscribe();
   }
 
   private handleVisibilityChange(): void {
-    if (!document.hidden && this.currentStationId) {
-      this.loadData();
+    if (document.hidden || !this.currentStationId || !this.hasLoadedOnce) {
+      return;
     }
+    const now = Date.now();
+    if (now - this.lastVisibilityRefresh < 2000) {
+      return;
+    }
+    this.lastVisibilityRefresh = now;
+    this.loadData();
   }
 
   private loadData(): void {
     if (!this.currentStationId) return;
 
-    // On initial load, show full page loading
-    // On subsequent loads (filter changes), only show chart loading
-    const isInitialLoad = this.isLoading;
-    if (!isInitialLoad) {
+    // Full-page spinner only on the genuine first load; later loads (filter
+    // change, switch-back refresh) use the lighter chart overlay.
+    if (!this.hasLoadedOnce) {
+      this.isLoading = true;
+    } else {
       this.isLoadingChart = true;
     }
 
     const minutes = this.getMinutesForFilter(this.selectedFilter);
 
-    this.stationService.getStationByIdWithMeasurements(this.currentStationId, minutes).subscribe({
+    // Cancel any in-flight request so the latest filter/refresh always wins — a
+    // rapid filter tap must not be dropped (which would strand the chart on the
+    // previous filter's data under a mislabeled, highlighted button).
+    this.loadSub?.unsubscribe();
+    this.loadSub = this.stationService.getStationByIdWithMeasurements(this.currentStationId, minutes).subscribe({
       next: station => {
         // Sample measurements for week and month to reduce data points
         if (station.measurements && station.measurements.length > 0) {
@@ -73,6 +91,7 @@ export class StationDetail implements OnInit, OnDestroy {
           }
         }
         this.station = station;
+        this.hasLoadedOnce = true;
         this.isLoading = false;
         this.isLoadingChart = false;
       },

@@ -2,8 +2,8 @@
   <app-loading-spinner size="lg" message="Loading stations..."></app-loading-spinner>
 } @else {
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-    @for (stationGroup of stationGroups; track stationGroup; let sgi = $index) {
-      @for (station of stationGroup.stations; track station; let si = $index) {
+    @for (stationGroup of stationGroups; track stationGroup.id; let sgi = $index) {
+      @for (station of stationGroup.stations; track station.id; let si = $index) {
         @if (si === 0) {
           <h2 class="text-xl col-span-full font-bold"
               [class.mt-4]="sgi > 0">{{ stationGroup.displayName }}</h2>
