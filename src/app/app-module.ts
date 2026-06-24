@@ -13,6 +13,8 @@ import { NgChartsModule } from 'ng2-charts';
 import { LoadingSpinner } from './shared/components/loading-spinner/loading-spinner';
 import { Header } from './shared/components/header/header';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { RouteReuseStrategy } from '@angular/router';
+import { AppRouteReuseStrategy } from './core/app-route-reuse-strategy';
 
 @NgModule({
   declarations: [
@@ -39,6 +41,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
+    { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
   ],
   bootstrap: [App]
 })
