@@ -15,14 +15,14 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
 
   // Detach (and keep) only routes that opted in via route data.
   shouldDetach(route: ActivatedRouteSnapshot): boolean {
-    return route.routeConfig?.data?.['reuse'] === true;
+    return this.isReusable(route);
   }
 
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle | null): void {
-    const key = this.getKey(route);
-    if (!key) {
+    if (!this.isReusable(route)) {
       return;
     }
+    const key = this.getKey(route);
     if (handle) {
       this.handlers.set(key, handle);
     } else {
@@ -31,10 +31,13 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
   }
 
   shouldAttach(route: ActivatedRouteSnapshot): boolean {
-    return this.handlers.has(this.getKey(route));
+    return this.isReusable(route) && this.handlers.has(this.getKey(route));
   }
 
   retrieve(route: ActivatedRouteSnapshot): DetachedRouteHandle | null {
+    if (!this.isReusable(route)) {
+      return null;
+    }
     return this.handlers.get(this.getKey(route)) ?? null;
   }
 
@@ -44,6 +47,14 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
     return future.routeConfig === curr.routeConfig;
   }
 
+  private isReusable(route: ActivatedRouteSnapshot): boolean {
+    return route.routeConfig?.data?.['reuse'] === true;
+  }
+
+  // The dashboard's path is the empty string — a valid, stable key. The previous
+  // version discarded it via a truthiness guard in store() (`if (!key) return`),
+  // so the handle was never stored and reuse silently did nothing. Gating on the
+  // reuse flag (isReusable) instead of on key truthiness fixes that.
   private getKey(route: ActivatedRouteSnapshot): string {
     return route.routeConfig?.path ?? '';
   }
