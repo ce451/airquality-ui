@@ -35,8 +35,8 @@ export class Dashbaord implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Stale-while-revalidate: paint the last-known snapshot immediately (the
-    // cards' "x min ago" stamp shows its age), then refresh over the network.
+    // Stale-while-revalidate: paint the last-known snapshot immediately, then
+    // refresh over the network (the WebSocket stream takes over once live).
     // On a slow remote link this turns seconds of spinner into an instant grid.
     const cached = this.dashboardCache.load();
     if (cached) {

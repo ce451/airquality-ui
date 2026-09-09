@@ -6,7 +6,6 @@ import {Measurement} from 'src/app/core/models/measurement.model';
 import {BaseChartDirective} from 'ng2-charts';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {WebSocketService} from 'src/app/core/services/web-socket.service';
-import {ClockService} from 'src/app/core/services/clock.service';
 import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
@@ -69,7 +68,6 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   constructor(private stationService: StationService,
               private breakpointObserver: BreakpointObserver,
               private webSocketService: WebSocketService,
-              protected clock: ClockService,
               private router: Router) {
   }
 
@@ -295,7 +293,16 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   setupChartOptions() {
     this.chartOptions = {
       responsive: true,
-      maintainAspectRatio: false,
+      // Dashboard cards (showStats): keep Chart.js's classic width/2 sizing.
+      // This is the height the cards have always had - previously by accident:
+      // the chart initialized BEFORE the async fetch delivered these options,
+      // so Chart.js's defaults (maintainAspectRatio true, aspectRatio 2) set
+      // the canvas height. Now that data+options are present at first render
+      // (batch/cache), maintainAspectRatio:false at init would collapse the
+      // height-less container. The detail chart (!showStats) fills its
+      // explicitly sized container as before.
+      maintainAspectRatio: this.showStats,
+      aspectRatio: 2,
       layout: {
         padding: {
           left: 0,

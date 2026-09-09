@@ -10,16 +10,15 @@ export interface DashboardSnapshot {
 
 const STORAGE_KEY = 'aq.dashboard.v1';
 // Snapshots older than this are discarded on load (matches the SW dataGroup
-// maxAge). The age stamp makes moderate staleness visible; week-old data is
-// just noise.
+// maxAge) - better a spinner than painting week-old data as current.
 const SNAPSHOT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Last-known dashboard data (stale-while-revalidate). On a slow remote link
  * the grid renders instantly from this snapshot while the network request runs
- * in the background; the per-card "x min ago" stamp makes staleness visible.
- * Purely best-effort: localStorage can be unavailable (private mode, quota) -
- * every access is guarded and a miss just means the usual spinner.
+ * in the background and replaces it. Purely best-effort: localStorage can be
+ * unavailable (private mode, quota) - every access is guarded and a miss just
+ * means the usual spinner.
  */
 @Injectable({providedIn: 'root'})
 export class DashboardCacheService {

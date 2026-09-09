@@ -60,7 +60,7 @@ src/app/
 - Environment switching via `fileReplacements` in angular.json
 
 **Data Flow & Initial Load (SWR + batch)**:
-1. **Initial Load**: the dashboard first paints the last successful snapshot from `DashboardCacheService` (localStorage, stale-while-revalidate; cards show a "x min ago" stamp), then `forkJoin`s TWO parallel requests: `GET /stationgroups` and the **batch** `GET /stations/measurements?minutes=60&maxPoints=150`. Cards receive their series via input and only self-fetch as a fallback (e.g. when the batch endpoint 404s on an older API — then the old per-card flow kicks in).
+1. **Initial Load**: the dashboard first paints the last successful snapshot from `DashboardCacheService` (localStorage, stale-while-revalidate), then `forkJoin`s TWO parallel requests: `GET /stationgroups` and the **batch** `GET /stations/measurements?minutes=60&maxPoints=150`. Cards receive their series via input and only self-fetch as a fallback (e.g. when the batch endpoint 404s on an older API — then the old per-card flow kicks in).
 2. **Grouping Logic**: Stations are grouped by `stationGroupId` and sorted by `displayOrder` within each group
 3. **Real-time Updates**: `WebSocketService` connects to `/ws` endpoint via SockJS/STOMP and subscribes to `/topic/measurements`
 4. **Component Updates**: `StationCard` subscribes to filtered WebSocket stream for its specific station and updates chart data
@@ -168,7 +168,7 @@ The endpoint paths below are backend paths (prefixed with `/api` in production):
   every measurement URL and traps everything in the 8-entry LRU (that bug caused
   the remote eternal-spinner). Offline shows the last-known data; the dashboard
   additionally keeps its own localStorage snapshot (`DashboardCacheService`) for
-  instant SWR paints; `LastUpdatedPipe` makes staleness visible (cards + detail).
+  instant SWR paints; `LastUpdatedPipe` makes staleness visible on the detail page (kept ticking via `ClockService`); deliberately NO extra indicators on the dashboard cards (visual changes there were explicitly not wanted).
   WebSocket traffic is not cached.
 - **Updates**: `SwUpdateService` (core/services) prompts to reload on
   `VERSION_READY` and calls `checkForUpdate()` on `visibilitychange`. nginx serves

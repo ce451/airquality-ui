@@ -30,19 +30,13 @@
   @if (this.showStats) {
     <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2">
       <span>{{ station.name }}</span>
-      <span class="flex items-center gap-1">
-        <!-- Data age: makes a stale (cached/offline) card distinguishable from a live one -->
-        @if (measurements[0]?.timestamp; as lastTimestamp) {
-          <span class="text-xs font-normal text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ lastTimestamp | lastUpdated: (clock.now$ | async) }}</span>
-        }
-        <button
-          (click)="navigateToDetail()"
-          class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </span>
+      <button
+        (click)="navigateToDetail()"
+        class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
     </h3>
   }
   <div class="w-full" [ngClass]="{'h-80 md:h-96 lg:h-[500px] xl:h-[450px]': !showStats}">
