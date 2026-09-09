@@ -4,6 +4,7 @@ import {Station} from 'src/app/core/models/station.model';
 import {StationGroup} from 'src/app/core/models/station-group.model';
 import {StationGroupService} from 'src/app/core/services/station-group.service';
 import {DashboardCacheService} from 'src/app/core/services/dashboard-cache.service';
+import {Router} from '@angular/router';
 import {catchError, forkJoin, throwError} from 'rxjs';
 
 // Dashboard cards render a 1-hour sparkline a few hundred px wide; ~150 points
@@ -28,7 +29,8 @@ export class Dashbaord implements OnInit, OnDestroy {
 
   constructor(private stationService: StationService,
               private stationGroupService: StationGroupService,
-              private dashboardCache: DashboardCacheService,) {
+              private dashboardCache: DashboardCacheService,
+              private router: Router,) {
     this.visibilityChangeHandler = () => this.handleVisibilityChange();
   }
 
@@ -53,6 +55,12 @@ export class Dashbaord implements OnInit, OnDestroy {
     if (document.hidden) {
       return;
     }
+    // The reuse strategy keeps the detached dashboard (and this listener)
+    // alive while the detail page is shown - resuming the app there must not
+    // additionally refresh the invisible dashboard.
+    if (this.router.url !== '/') {
+      return;
+    }
     const now = Date.now();
     if (now - this.lastVisibilityRefresh < 2000) {
       return;
@@ -65,7 +73,28 @@ export class Dashbaord implements OnInit, OnDestroy {
       this.loadData();
       return;
     }
+    // Skip the refetch entirely after a short app switch: station.measurements
+    // holds the last HTTP snapshot (live WebSocket points only update the
+    // cards' internal copies), so this errs toward refreshing - never toward
+    // showing stale data.
+    if (this.newestMeasurementAgeMs() < 60_000) {
+      return;
+    }
     this.loadData({silent: true});
+  }
+
+  private newestMeasurementAgeMs(): number {
+    let newest = 0;
+    for (const station of this.stations) {
+      const first = station.measurements?.[0];
+      if (first) {
+        const t = new Date(first.timestamp).getTime();
+        if (t > newest) {
+          newest = t;
+        }
+      }
+    }
+    return newest ? Date.now() - newest : Number.POSITIVE_INFINITY;
   }
 
   retry(): void {
