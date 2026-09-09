@@ -1,10 +1,14 @@
-import {Component, OnDestroy, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {StationService} from 'src/app/core/services/station.service';
 import {Station} from 'src/app/core/models/station.model';
 import {StationGroup} from 'src/app/core/models/station-group.model';
 import {StationGroupService} from 'src/app/core/services/station-group.service';
-import {StationCard} from 'src/app/shared/components/station-card/station-card';
-import {forkJoin} from 'rxjs';
+import {catchError, forkJoin, throwError} from 'rxjs';
+
+// Dashboard cards render a 1-hour sparkline a few hundred px wide; ~150 points
+// is already denser than the drawing, anything more is wasted transfer.
+const CARD_WINDOW_MINUTES = 60;
+const CARD_MAX_POINTS = 150;
 
 @Component({
   selector: 'app-dashbaord',
@@ -13,7 +17,6 @@ import {forkJoin} from 'rxjs';
   styleUrl: './dashbaord.scss'
 })
 export class Dashbaord implements OnInit, OnDestroy {
-  @ViewChildren(StationCard) cards?: QueryList<StationCard>;
   stations: Station[] = [];
   stationGroups: StationGroup[] = [];
   isLoading: boolean = true;
@@ -45,35 +48,44 @@ export class Dashbaord implements OnInit, OnDestroy {
       return;
     }
     this.lastVisibilityRefresh = now;
-    // If the initial load never produced any cards (e.g. offline cold start or a
-    // failed/interrupted first load), retry it. Otherwise refresh each card's
-    // measurements silently — no list refetch, no grid blank. The station list
-    // itself is intentionally fetched only once (sensors rarely change, and the
-    // card shows no status field); a full reload picks up added/removed/renamed
-    // stations.
+    // If the initial load never produced any cards (e.g. offline cold start or
+    // a failed/interrupted first load), retry with the full spinner. Otherwise
+    // refresh silently: one batch request re-fills every card in place.
     if (!this.stations.length) {
       this.loadData();
       return;
     }
-    this.cards?.forEach(card => card.refresh());
+    this.loadData({silent: true});
   }
 
   retry(): void {
     this.loadData();
   }
 
-  private loadData(): void {
+  private loadData(options: { silent: boolean } = {silent: false}): void {
     if (this.loadInFlight) {
       return;
     }
     this.loadInFlight = true;
-    this.isLoading = true;
+    if (!options.silent) {
+      this.isLoading = true;
+    }
     this.hasError = false;
 
-    // First, fetch station groups and stations (without measurements)
+    // Groups and the batch series load in parallel: 2 requests total instead
+    // of 2 + one measurements request per card.
     const observables = forkJoin({
       stationGroups: this.stationGroupService.getAllStationGroups(),
-      stations: this.stationService.getAllStations()
+      stations: this.stationService
+        .getAllStationsWithMeasurements(CARD_WINDOW_MINUTES, CARD_MAX_POINTS)
+        .pipe(
+          // Rollout fallback: an API without the batch endpoint answers 404.
+          // Degrade to the plain station list - each card then fetches its own
+          // series exactly as before.
+          catchError(err => err?.status === 404
+            ? this.stationService.getAllStations()
+            : throwError(() => err))
+        )
     });
 
     observables.subscribe({
@@ -88,13 +100,14 @@ export class Dashbaord implements OnInit, OnDestroy {
           group.stations.sort((a, b) => a.displayOrder - b.displayOrder);
         });
 
-        // Show cards immediately (measurements will load progressively in station-card component)
         this.isLoading = false;
         this.loadInFlight = false;
       },
       error: err => {
         console.error(err);
-        this.hasError = true;
+        // A failed silent refresh keeps showing the data that is already on
+        // screen; the full-page error state is only for an empty dashboard.
+        this.hasError = !this.stations.length;
         this.isLoading = false;
         this.loadInFlight = false;
       },

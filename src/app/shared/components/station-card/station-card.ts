@@ -134,13 +134,14 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   }
 
   private initStationData() {
-    // Only fetch from API if we have less than 2 measurements
-    // (Dashboard now passes stations without measurements)
-    // Detail page passes pre-filtered measurements, don't re-fetch those
+    // Both parents provide the series via the station input (dashboard: batch
+    // endpoint; detail page: its filtered window). The self-fetch only remains
+    // as a fallback for a station that arrived without measurements (e.g. the
+    // dashboard's legacy-API fallback path).
     const shouldFetch = !this.station.measurements || this.station.measurements.length <= 1;
 
     if (shouldFetch) {
-      this.fetchMeasurements(true);
+      this.fetchMeasurements();
     } else {
       // Use measurements passed from parent
       this.parseMeasurements(this.measurements);
@@ -170,22 +171,16 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  // Fetch the last hour of measurements. showOverlay=true blanks the card with the
-  // spinner (first load); false refreshes silently in the background (switch-back).
-  private fetchMeasurements(showOverlay: boolean): void {
-    // Don't let a silent refresh interrupt an in-flight overlay (first) load —
-    // cancelling it would strand the spinner. Concurrent silent refreshes are
-    // serialized by fetchSub.unsubscribe() below (latest wins).
+  // Fallback fetch (last hour, sampled) when the parent supplied no series.
+  private fetchMeasurements(): void {
     if (this.isLoadingMeasurements) {
       return;
     }
-    if (showOverlay) {
-      this.isLoadingMeasurements = true;
-    }
+    this.isLoadingMeasurements = true;
     this.loadError = false;
     this.fetchSub?.unsubscribe();
     this.fetchSub = this.stationService
-      .getStationByIdWithMeasurements(this.station.id, 60) // Last 1 hour for dashboard
+      .getStationByIdWithMeasurements(this.station.id, 60, 150)
       .subscribe({
         next: data => {
           if (data.measurements) {
@@ -204,17 +199,8 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
       });
   }
 
-  // Silent background refresh triggered by the dashboard when the app returns to
-  // the foreground. No-op for the detail-page card (it owns its measurements).
-  public refresh(): void {
-    if (!this.showStats || !this.station || !this.station.id) {
-      return;
-    }
-    this.fetchMeasurements(false);
-  }
-
   retryLoad(): void {
-    this.fetchMeasurements(true);
+    this.fetchMeasurements();
   }
 
   parseMeasurements(measurements: Measurement[]): void {
