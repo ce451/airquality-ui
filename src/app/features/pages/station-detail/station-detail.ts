@@ -7,6 +7,12 @@ import {Subscription} from 'rxjs';
 
 type TimeFilter = '1h' | '3h' | '24h' | 'week' | 'month';
 
+// A detail chart is at most ~1200px wide - the server samples the series down
+// to this size (evenly strided, newest+oldest kept). Before, the full series
+// was transferred and mostly discarded client-side: the month filter downloaded
+// ~9900 points (1.7 MB uncompressed) to render ~500.
+const DETAIL_MAX_POINTS = 500;
+
 @Component({
   selector: 'app-station-detail',
   standalone: false,
@@ -85,15 +91,8 @@ export class StationDetail implements OnInit, OnDestroy {
     // rapid filter tap must not be dropped (which would strand the chart on the
     // previous filter's data under a mislabeled, highlighted button).
     this.loadSub?.unsubscribe();
-    this.loadSub = this.stationService.getStationByIdWithMeasurements(this.currentStationId, minutes).subscribe({
+    this.loadSub = this.stationService.getStationByIdWithMeasurements(this.currentStationId, minutes, DETAIL_MAX_POINTS).subscribe({
       next: station => {
-        // Sample measurements for week and month to reduce data points
-        if (station.measurements && station.measurements.length > 0) {
-          const samplingRate = this.getSamplingRate(this.selectedFilter);
-          if (samplingRate > 1) {
-            station.measurements = station.measurements.filter((_, index) => index % samplingRate === 0);
-          }
-        }
         this.station = station;
         this.hasLoadedOnce = true;
         this.isLoading = false;
@@ -126,25 +125,6 @@ export class StationDetail implements OnInit, OnDestroy {
         return 43200; // 30 days
       default:
         return 1440;
-    }
-  }
-
-  private getSamplingRate(filter: TimeFilter): number {
-    // Measurements are stored every 30 seconds
-    // Sample to reduce chart data points for better performance
-    switch (filter) {
-      case '1h':
-        return 1; // Keep all (120 points)
-      case '3h':
-        return 1; // Keep all (360 points)
-      case '24h':
-        return 3; // Every 1.5 min (~960 points)
-      case 'week':
-        return 10; // Every 5 min (~2,016 points)
-      case 'month':
-        return 20; // Every 10 min (~4,320 points)
-      default:
-        return 1;
     }
   }
 }
