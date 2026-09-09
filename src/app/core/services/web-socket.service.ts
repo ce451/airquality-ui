@@ -17,7 +17,22 @@ export class WebSocketService {
   public readonly isConnected$ = this.connected$.asObservable().pipe(shareReplay(1));
 
   constructor(private zone: NgZone) {
-    this.init();
+  }
+
+  /**
+   * Connects lazily, on first interest (a card subscribing), instead of in the
+   * service constructor: the SockJS /info + upgrade handshake used to start in
+   * the same tick as the initial data requests. Runs outside the Angular zone -
+   * the STOMP heartbeat/ponger setInterval timers are periodic macrotasks that
+   * otherwise keep the app permanently "unstable", which pushed the service
+   * worker registration (registerWhenStable:30000) to the 30s fallback timer.
+   * Message delivery re-enters the zone explicitly (zone.run below).
+   */
+  public ensureConnected(): void {
+    if (this.client) {
+      return;
+    }
+    this.zone.runOutsideAngular(() => this.init());
   }
 
   private init() {

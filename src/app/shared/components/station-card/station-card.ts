@@ -153,6 +153,9 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   // Subscribe to the live measurement stream exactly once per station id.
   // Re-running ngOnChanges (e.g. a switch-back refresh) must not stack subscriptions.
   private ensureWsSubscription(): void {
+    // Cards only exist after the first grid paint, so this defers the SockJS
+    // handshake until the user already sees data.
+    this.webSocketService.ensureConnected();
     if (this.subscribedStationId === this.station.id && this.wsSub) {
       return;
     }
