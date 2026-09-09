@@ -29,6 +29,19 @@
   ],
   "dataGroups": [
     {
+      "name": "api-measurements",
+      "urls": [
+        "/api/stations/measurements**",
+        "/api/stations/*/measurements**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "5s",
+        "maxAge": "7d",
+        "maxSize": 64
+      }
+    },
+    {
       "name": "api-meta",
       "urls": [
         "/api/stations",
@@ -39,18 +52,6 @@
         "timeout": "3s",
         "maxAge": "7d",
         "maxSize": 8
-      }
-    },
-    {
-      "name": "api-measurements",
-      "urls": [
-        "/api/stations/**"
-      ],
-      "cacheConfig": {
-        "strategy": "freshness",
-        "timeout": "5s",
-        "maxAge": "7d",
-        "maxSize": 64
       }
     }
   ],
