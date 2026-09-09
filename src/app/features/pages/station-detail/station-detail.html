@@ -38,7 +38,7 @@
         class="flex flex-col flex-1 sm:grow-0 items-center md:items-start rounded bg-gray-100 dark:bg-gray-700 py-3 px-8">
         <span>Last updated</span>
         @if (station.measurements && station.measurements.length > 0) {
-          <span class="font-semibold">{{ station.measurements[0].timestamp | lastUpdated }}</span>
+          <span class="font-semibold">{{ station.measurements[0].timestamp | lastUpdated: (clock.now$ | async) }}</span>
         } @else {
           <span class="font-semibold">—</span>
         }

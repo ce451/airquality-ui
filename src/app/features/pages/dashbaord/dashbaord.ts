@@ -57,8 +57,10 @@ export class Dashbaord implements OnInit, OnDestroy {
     }
     // The reuse strategy keeps the detached dashboard (and this listener)
     // alive while the detail page is shown - resuming the app there must not
-    // additionally refresh the invisible dashboard.
-    if (this.router.url !== '/') {
+    // additionally refresh the invisible dashboard. Compare the path only:
+    // a query string or fragment (e.g. a start_url tracking param) must not
+    // disable the refresh forever.
+    if (this.router.url.split(/[?#]/)[0] !== '/') {
       return;
     }
     const now = Date.now();
@@ -118,10 +120,14 @@ export class Dashbaord implements OnInit, OnDestroy {
       stations: this.stationService
         .getAllStationsWithMeasurements(CARD_WINDOW_MINUTES, CARD_MAX_POINTS)
         .pipe(
-          // Rollout fallback: an API without the batch endpoint answers 404.
-          // Degrade to the plain station list - each card then fetches its own
-          // series exactly as before.
-          catchError(err => err?.status === 404
+          // Rollout fallback: an API without the batch endpoint does NOT
+          // answer 404 - the URL matches /stations/{id} with id="measurements"
+          // and the Long conversion fails with a 400. Treat any 4xx as "batch
+          // endpoint not available" and degrade to the plain station list;
+          // each card then fetches its own series exactly as before. Network
+          // failures (status 0) and timeouts (no status) still surface as
+          // errors so the cache/error handling can take over.
+          catchError(err => (typeof err?.status === 'number' && err.status >= 400 && err.status < 500)
             ? this.stationService.getAllStations()
             : throwError(() => err))
         )
@@ -130,8 +136,13 @@ export class Dashbaord implements OnInit, OnDestroy {
     observables.subscribe({
       next: ({stationGroups, stations}) => {
         // Snapshot the raw responses before applyData attaches stations onto
-        // the groups (avoids serializing every station twice).
-        this.dashboardCache.save(stationGroups, stations);
+        // the groups (avoids serializing every station twice). Skip the
+        // legacy-fallback shape (stations without a measurements field): a
+        // snapshot of empty cards would paint 12x "Keine Daten" on the next
+        // cold start - worse than the plain spinner.
+        if (stations.some(s => Array.isArray(s.measurements))) {
+          this.dashboardCache.save(stationGroups, stations);
+        }
         this.applyData(stationGroups, stations);
 
         this.isLoading = false;

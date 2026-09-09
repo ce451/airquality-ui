@@ -6,12 +6,14 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class LastUpdatedPipe implements PipeTransform {
 
-  transform(value: string | Date): string {
+  // The pipe is pure, so it only re-runs when an argument changes. Callers
+  // pass `now` from ClockService.now$ (via async pipe) - that 30s tick is what
+  // keeps the displayed age moving while the timestamp itself stays the same.
+  transform(value: string | Date, now?: number | null): string {
     if (!value) return '';
 
     const time = new Date(value).getTime();
-    const now = Date.now();
-    const diffMs = now - time;
+    const diffMs = (now ?? Date.now()) - time;
     const diffSec = Math.floor(diffMs / 1000);
     if (diffSec < 60) return `right now`;
     const diffMin = Math.floor(diffSec / 60);

@@ -33,7 +33,7 @@
       <span class="flex items-center gap-1">
         <!-- Data age: makes a stale (cached/offline) card distinguishable from a live one -->
         @if (measurements[0]?.timestamp; as lastTimestamp) {
-          <span class="text-xs font-normal text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ lastTimestamp | lastUpdated }}</span>
+          <span class="text-xs font-normal text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ lastTimestamp | lastUpdated: (clock.now$ | async) }}</span>
         }
         <button
           (click)="navigateToDetail()"

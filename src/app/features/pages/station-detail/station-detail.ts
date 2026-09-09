@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Station} from 'src/app/core/models/station.model';
 import {ActivatedRoute} from '@angular/router';
 import {StationService} from 'src/app/core/services/station.service';
+import {ClockService} from 'src/app/core/services/clock.service';
 import {ChartConfiguration, ChartType} from 'chart.js';
 import {Subscription} from 'rxjs';
 
@@ -35,7 +36,8 @@ export class StationDetail implements OnInit, OnDestroy {
   private loadSub?: Subscription;
 
   constructor(private route: ActivatedRoute,
-              private stationService: StationService) {
+              private stationService: StationService,
+              protected clock: ClockService) {
     this.visibilityChangeHandler = () => this.handleVisibilityChange();
   }
 

@@ -9,6 +9,10 @@ export interface DashboardSnapshot {
 }
 
 const STORAGE_KEY = 'aq.dashboard.v1';
+// Snapshots older than this are discarded on load (matches the SW dataGroup
+// maxAge). The age stamp makes moderate staleness visible; week-old data is
+// just noise.
+const SNAPSHOT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Last-known dashboard data (stale-while-revalidate). On a slow remote link
@@ -28,6 +32,9 @@ export class DashboardCacheService {
       }
       const snapshot = JSON.parse(raw) as DashboardSnapshot;
       if (!snapshot || !Array.isArray(snapshot.stationGroups) || !Array.isArray(snapshot.stations)) {
+        return null;
+      }
+      if (!snapshot.savedAt || Date.now() - snapshot.savedAt > SNAPSHOT_TTL_MS) {
         return null;
       }
       return snapshot;

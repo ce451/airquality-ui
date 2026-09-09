@@ -99,5 +99,8 @@ export class WebSocketService {
       this.topicSub = undefined;
       this.client?.deactivate();
     } catch (e) {}
+    // Allow a later ensureConnected() to build a fresh client - without this
+    // the lazy-connect guard would make disconnect() a one-way door.
+    this.client = undefined;
   }
 }

@@ -6,8 +6,13 @@ import {Measurement} from 'src/app/core/models/measurement.model';
 import {BaseChartDirective} from 'ng2-charts';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {WebSocketService} from 'src/app/core/services/web-socket.service';
+import {ClockService} from 'src/app/core/services/clock.service';
 import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
+
+// Upper bound for the live-updated series a card keeps (matches the dashboard
+// batch request's maxPoints for the 1h window).
+const WS_WINDOW_MAX_POINTS = 150;
 
 @Component({
   selector: 'app-station-card',
@@ -64,6 +69,7 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   constructor(private stationService: StationService,
               private breakpointObserver: BreakpointObserver,
               private webSocketService: WebSocketService,
+              protected clock: ClockService,
               private router: Router) {
   }
 
@@ -134,11 +140,14 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   }
 
   private initStationData() {
-    // Both parents provide the series via the station input (dashboard: batch
-    // endpoint; detail page: its filtered window). The self-fetch only remains
-    // as a fallback for a station that arrived without measurements (e.g. the
-    // dashboard's legacy-API fallback path).
-    const shouldFetch = !this.station.measurements || this.station.measurements.length <= 1;
+    // A MISSING measurements field means the parent could not provide the
+    // series (dashboard legacy-API fallback path) -> fetch it ourselves. An
+    // EMPTY array is an answer ("no data in this window") and must not
+    // trigger a fetch: the batch endpoint returns [] for offline sensors
+    // (fetching again per silent refresh would just re-blank the card), and
+    // the detail card must not override an empty filter window with its own
+    // 60-minute fetch.
+    const shouldFetch = !this.station.measurements;
 
     if (shouldFetch) {
       this.fetchMeasurements();
@@ -165,7 +174,12 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
       if (data) {
         this.measurements = this.measurements || [];
         this.measurements.unshift(data);
-        this.measurements.pop();
+        // Bounded window. Popping unconditionally discarded every live point
+        // on a card that started empty (unshift then pop of the same element),
+        // so a recovered sensor could never fill its card.
+        if (this.measurements.length > WS_WINDOW_MAX_POINTS) {
+          this.measurements.pop();
+        }
 
         this.parseMeasurements(this.measurements);
         this.setupChartOptions();
