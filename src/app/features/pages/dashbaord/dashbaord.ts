@@ -3,6 +3,7 @@ import {StationService} from 'src/app/core/services/station.service';
 import {Station} from 'src/app/core/models/station.model';
 import {StationGroup} from 'src/app/core/models/station-group.model';
 import {StationGroupService} from 'src/app/core/services/station-group.service';
+import {DashboardCacheService} from 'src/app/core/services/dashboard-cache.service';
 import {catchError, forkJoin, throwError} from 'rxjs';
 
 // Dashboard cards render a 1-hour sparkline a few hundred px wide; ~150 points
@@ -26,12 +27,21 @@ export class Dashbaord implements OnInit, OnDestroy {
   private lastVisibilityRefresh = 0;
 
   constructor(private stationService: StationService,
-              private stationGroupService: StationGroupService,) {
+              private stationGroupService: StationGroupService,
+              private dashboardCache: DashboardCacheService,) {
     this.visibilityChangeHandler = () => this.handleVisibilityChange();
   }
 
   ngOnInit(): void {
-    this.loadData();
+    // Stale-while-revalidate: paint the last-known snapshot immediately (the
+    // cards' "x min ago" stamp shows its age), then refresh over the network.
+    // On a slow remote link this turns seconds of spinner into an instant grid.
+    const cached = this.dashboardCache.load();
+    if (cached) {
+      this.applyData(cached.stationGroups, cached.stations);
+      this.isLoading = false;
+    }
+    this.loadData({silent: !!cached});
     document.addEventListener('visibilitychange', this.visibilityChangeHandler);
   }
 
@@ -90,15 +100,10 @@ export class Dashbaord implements OnInit, OnDestroy {
 
     observables.subscribe({
       next: ({stationGroups, stations}) => {
-        this.stationGroups = stationGroups;
-        this.stations = stations;
-
-        this.stationGroups.sort((a, b) => a.displayOrder - b.displayOrder);
-
-        this.stationGroups.forEach(group => {
-          group.stations = this.stations.filter(station => station.stationGroupId === group.id);
-          group.stations.sort((a, b) => a.displayOrder - b.displayOrder);
-        });
+        // Snapshot the raw responses before applyData attaches stations onto
+        // the groups (avoids serializing every station twice).
+        this.dashboardCache.save(stationGroups, stations);
+        this.applyData(stationGroups, stations);
 
         this.isLoading = false;
         this.loadInFlight = false;
@@ -111,6 +116,18 @@ export class Dashbaord implements OnInit, OnDestroy {
         this.isLoading = false;
         this.loadInFlight = false;
       },
+    });
+  }
+
+  private applyData(stationGroups: StationGroup[], stations: Station[]): void {
+    this.stationGroups = stationGroups;
+    this.stations = stations;
+
+    this.stationGroups.sort((a, b) => a.displayOrder - b.displayOrder);
+
+    this.stationGroups.forEach(group => {
+      group.stations = this.stations.filter(station => station.stationGroupId === group.id);
+      group.stations.sort((a, b) => a.displayOrder - b.displayOrder);
     });
   }
 }
