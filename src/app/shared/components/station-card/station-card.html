@@ -28,7 +28,8 @@
   }
 
   @if (this.showStats) {
-    <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2">
+    <!-- z-20: stays above the no-data/loading/error overlays so the detail page stays reachable -->
+    <h3 class="text-lg font-semibold mb-1 flex items-center justify-between gap-2 relative z-20">
       <span>{{ station.name }}</span>
       <button
         (click)="navigateToDetail()"
