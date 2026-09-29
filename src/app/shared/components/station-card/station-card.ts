@@ -26,6 +26,9 @@ const STALE_AFTER_MS = 20 * 60_000;
 export class StationCard implements OnInit, OnChanges, OnDestroy {
   @Input() station!: Station;
   @Input() showStats: boolean = true;
+  // Detail page, windows > 24h: labels (= tooltip titles, the x axis is hidden)
+  // carry the date too, otherwise points from different days look identical.
+  @Input() showDateInTooltip: boolean = false;
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   protected measurements: Measurement[] = [];
@@ -253,7 +256,9 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
     }
     this.hasNoData = false;
 
-    const labels = measurements.map(m => new Date(m.timestamp).toLocaleTimeString());
+    const labels = measurements.map(m => this.showDateInTooltip
+      ? new Date(m.timestamp).toLocaleString()
+      : new Date(m.timestamp).toLocaleTimeString());
     this.temperatureData = measurements.map(m => m.temperature);
     this.humidityData = measurements.map(m => m.humidity);
     this.absoluteHumidityData = measurements.map(m => m.absoluteHumidity);

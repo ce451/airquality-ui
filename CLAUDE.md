@@ -138,6 +138,7 @@ The endpoint paths below are backend paths (prefixed with `/api` in production):
 ### Time Filters (Detail Page)
 - **Filter Options**: 1 Hour, 3 Hours, 24 Hours, Week (7 days), Month (30 days)
 - **Default**: 24 Hours
+- **Tooltip**: the x axis is hidden, so the label is only visible in the hover tooltip — time only for 1h/3h/24h, date + time for Week/Month (`showDateInTooltip` input, set from the LOADED window).
 - **Server-Side Filtering & Sampling**: queries the backend with `minutes` + `maxPoints=500`; the API downsamples the series server-side (evenly strided, newest+oldest kept). Client-side sampling was removed — it used to download the full series (month: ~9900 points / 1.7 MB raw) only to discard ~95% locally. The API additionally **thins older data destructively** (see "Measurement Frequency" below).
 - **Loading UX**: Semi-transparent overlay over chart area when filter changes
 

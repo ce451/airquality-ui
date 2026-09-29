@@ -28,6 +28,9 @@ export class StationDetail implements OnInit, OnDestroy {
   isLoading: boolean = true;
   isLoadingChart: boolean = false;
   selectedFilter: TimeFilter = '24h';
+  // Tracks the LOADED window (not the tapped button), so the old series isn't
+  // relabeled while the next filter is still loading.
+  showDateInTooltip: boolean = false;
   private currentStationId?: number;
   private visibilityChangeHandler: () => void;
   private hasLoadedOnce = false;
@@ -96,6 +99,7 @@ export class StationDetail implements OnInit, OnDestroy {
     this.loadSub = this.stationService.getStationByIdWithMeasurements(this.currentStationId, minutes, DETAIL_MAX_POINTS).subscribe({
       next: station => {
         this.station = station;
+        this.showDateInTooltip = minutes > 1440;
         this.hasLoadedOnce = true;
         this.isLoading = false;
         this.isLoadingChart = false;
