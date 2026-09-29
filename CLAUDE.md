@@ -149,7 +149,7 @@ The endpoint paths below are backend paths (prefixed with `/api` in production):
 - **Timeouts**: every HTTP call has a 15s rxjs `timeout` — without it, the SW freshness strategy waits on the network forever when its cache is empty (eternal spinner)
 
 ### Versions
-- **UI version**: `package.json` `version` (single source; `VersionService.uiVersion` imports it at build time). Bump it with each user-visible change/release (`npm version x.y.z --no-git-tag-version` keeps `package-lock.json` in sync).
+- **UI version**: `package.json` `version` (single source; `VersionService.uiVersion` imports it at build time). SemVer, major fixed at 1: new user-facing capability → minor+1 (patch 0); fix/improvement/perf of an existing one → patch+1; build/docs/deps/refactor → no bump. 1.12.0 was derived by replaying this rule over the whole git history (12 feature, 33 fix commits up to the version display). Bump in the same commit as the change (`npm version x.y.z --no-git-tag-version` keeps `package-lock.json` in sync).
 - **API version**: fetched from the API's `GET /version` (plain text, `spring.application.version`), re-read on every dashboard (re)load; `–` when unreachable (not SW-cached).
 - Both are shown as one small muted line at the end of the dashboard (`UI x · API y`) — nowhere else.
 
