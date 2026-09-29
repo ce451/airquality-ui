@@ -148,6 +148,11 @@ The endpoint paths below are backend paths (prefixed with `/api` in production):
 - **Visibility API**: Auto-refreshes on app resume — dashboard: one silent batch request, gated on (a) the dashboard route being active (the reuse strategy keeps the detached dashboard's listener alive on the detail page) and (b) the last snapshot being >60s old; detail page: reloads its current filter (2s debounce)
 - **Timeouts**: every HTTP call has a 15s rxjs `timeout` — without it, the SW freshness strategy waits on the network forever when its cache is empty (eternal spinner)
 
+### Versions
+- **UI version**: `package.json` `version` (single source; `VersionService.uiVersion` imports it at build time). Bump it with each user-visible change/release (`npm version x.y.z --no-git-tag-version` keeps `package-lock.json` in sync).
+- **API version**: fetched from the API's `GET /version` (plain text, `spring.application.version`), re-read on every dashboard (re)load; `–` when unreachable (not SW-cached).
+- Both are shown as one small muted line at the end of the dashboard (`UI x · API y`) — nowhere else.
+
 ### Navigation
 - **Dashboard Cards**: Icon button (chevron right) in top-right corner navigates to detail page
 - **Detail Page**: Back button in header returns to dashboard
