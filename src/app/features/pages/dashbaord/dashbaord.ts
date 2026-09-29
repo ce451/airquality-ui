@@ -4,6 +4,7 @@ import {Station} from 'src/app/core/models/station.model';
 import {StationGroup} from 'src/app/core/models/station-group.model';
 import {StationGroupService} from 'src/app/core/services/station-group.service';
 import {DashboardCacheService} from 'src/app/core/services/dashboard-cache.service';
+import {VersionService} from 'src/app/core/services/version.service';
 import {Router} from '@angular/router';
 import {catchError, forkJoin, throwError} from 'rxjs';
 
@@ -23,6 +24,7 @@ export class Dashbaord implements OnInit, OnDestroy {
   stationGroups: StationGroup[] = [];
   isLoading: boolean = true;
   hasError: boolean = false;
+  apiVersion: string | null = null;
   private visibilityChangeHandler: () => void;
   private loadInFlight = false;
   private lastVisibilityRefresh = 0;
@@ -30,6 +32,7 @@ export class Dashbaord implements OnInit, OnDestroy {
   constructor(private stationService: StationService,
               private stationGroupService: StationGroupService,
               private dashboardCache: DashboardCacheService,
+              protected versionService: VersionService,
               private router: Router,) {
     this.visibilityChangeHandler = () => this.handleVisibilityChange();
   }
@@ -112,6 +115,10 @@ export class Dashbaord implements OnInit, OnDestroy {
       this.isLoading = true;
     }
     this.hasError = false;
+
+    // Re-read on every (re)load, so an API redeploy shows up after the next
+    // resume refresh without reloading the app.
+    this.versionService.getApiVersion().subscribe(v => this.apiVersion = v ?? this.apiVersion);
 
     // Groups and the batch series load in parallel: 2 requests total instead
     // of 2 + one measurements request per card.
