@@ -6,12 +6,16 @@ import {Measurement} from 'src/app/core/models/measurement.model';
 import {BaseChartDirective} from 'ng2-charts';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {WebSocketService} from 'src/app/core/services/web-socket.service';
+import {ClockService} from 'src/app/core/services/clock.service';
 import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 
 // Upper bound for the live-updated series a card keeps (matches the dashboard
 // batch request's maxPoints for the 1h window).
 const WS_WINDOW_MAX_POINTS = 150;
+
+// Sensors post every 15s; a newest value older than this gets the stale marker.
+const STALE_AFTER_MS = 20 * 60_000;
 
 @Component({
   selector: 'app-station-card',
@@ -68,7 +72,18 @@ export class StationCard implements OnInit, OnChanges, OnDestroy {
   constructor(private stationService: StationService,
               private breakpointObserver: BreakpointObserver,
               private webSocketService: WebSocketService,
-              private router: Router) {
+              private router: Router,
+              protected clock: ClockService) {
+  }
+
+  // True when the displayed (newest) values are older than STALE_AFTER_MS.
+  // `now` comes from ClockService.now$ so the marker appears without new data.
+  protected isStale(now: number | null): boolean {
+    const newest = this.measurements[0];
+    if (!newest || now === null) {
+      return false;
+    }
+    return now - new Date(newest.timestamp).getTime() > STALE_AFTER_MS;
   }
 
   ngOnInit() {

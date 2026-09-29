@@ -168,7 +168,7 @@ The endpoint paths below are backend paths (prefixed with `/api` in production):
   every measurement URL and traps everything in the 8-entry LRU (that bug caused
   the remote eternal-spinner). Offline shows the last-known data; the dashboard
   additionally keeps its own localStorage snapshot (`DashboardCacheService`) for
-  instant SWR paints; `LastUpdatedPipe` makes staleness visible on the detail page (kept ticking via `ClockService`); deliberately NO extra indicators on the dashboard cards (visual changes there were explicitly not wanted).
+  instant SWR paints; `LastUpdatedPipe` makes staleness visible on the detail page (kept ticking via `ClockService`). Dashboard cards show exactly ONE staleness indicator, explicitly requested: an amber "!" behind the station name when the newest displayed value is >20 min old (`StationCard.isStale`, fed by `ClockService.now$`, whose interval runs outside the Angular zone so it doesn't block `isStable`/SW registration). No further visual additions on the cards without an explicit request.
   WebSocket traffic is not cached.
 - **Updates**: `SwUpdateService` (core/services) prompts to reload on
   `VERSION_READY` and calls `checkForUpdate()` on `visibilitychange`. nginx serves
